@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Klasterisasi Wilayah Rawan Bencana</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -19,136 +18,26 @@
         body {
             font-family: 'Poppins', sans-serif;
             background: #f0f2f5;
-            overflow: hidden;
-            height: 100vh;
-        }
-
-        /* ── TOPBAR ── */
-        .topbar {
-            background: #fff;
-            height: 52px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 20px;
-            border-bottom: 1px solid #e5e7eb;
-            box-shadow: 0 1px 4px rgba(0,0,0,.06);
-            position: fixed;
-            top: 0; left: 0; right: 0;
-            z-index: 1000;
-        }
-
-        .topbar-left {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .topbar-logo {
-            width: 34px;
-            height: 34px;
-            background: linear-gradient(135deg, #e63946, #f4a261);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #fff;
-            font-size: 16px;
-        }
-
-        .topbar-title {
-            line-height: 1.2;
-        }
-
-        .topbar-title h6 {
-            font-size: 13px;
-            font-weight: 700;
-            color: #1a202c;
-            margin: 0;
-        }
-
-        .topbar-title small {
-            font-size: 10px;
-            color: #6b7280;
-        }
-
-        .topbar-right {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
-
-        .notif-btn {
-            position: relative;
-            background: none;
-            border: none;
-            font-size: 18px;
-            color: #6b7280;
-            cursor: pointer;
-            padding: 4px;
-        }
-
-        .notif-badge {
-            position: absolute;
-            top: -2px; right: -4px;
-            background: #e63946;
-            color: #fff;
-            font-size: 9px;
-            font-weight: 700;
-            border-radius: 10px;
-            padding: 1px 4px;
-            min-width: 16px;
-            text-align: center;
-        }
-
-        .admin-chip {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: #f3f4f6;
-            border-radius: 20px;
-            padding: 4px 12px 4px 6px;
-        }
-
-        .admin-avatar {
-            width: 26px;
-            height: 26px;
-            background: #4f46e5;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #fff;
-            font-size: 12px;
-        }
-
-        .admin-chip span {
-            font-size: 12px;
-            font-weight: 600;
-            color: #374151;
+            overflow-y: auto;
+            min-height: 100vh;
         }
 
         /* ── MAIN LAYOUT ── */
-        .main-content {
-            margin-top: 52px;
-            height: calc(100vh - 52px);
-            display:grid;
-            grid-template-columns:48% 52%;
-            gap:12px;
-            padding:12px;
-            overflow:hidden;
+       .main-content {
+            display: grid;
+            grid-template-columns: 52% 48%;
+            gap: 12px;
+            padding: 12px;
+            min-height: 100vh;
         }
-
         /* ── LEFT PANEL ── */
         .left-panel {
-            width:100%;
-            min-width:100%;
+            width: 100%;
+            min-width: 100%;
             background: #fff;
-            border-right: 1px solid #e5e7eb;
-            display: flex;
-            flex-direction: column;
+            border-radius: 12px;
+            padding: 12px;
             overflow-y: auto;
-            padding: 14px;
         }
 
         .left-panel::-webkit-scrollbar { width: 4px; }
@@ -181,7 +70,7 @@
 
         #map {
             width: 100%;
-            height:340px;
+            height: 720px;
             border-radius: 10px;
             border: 1px solid #e5e7eb;
         }
@@ -254,7 +143,7 @@
         /* ── RIGHT PANEL ── */
         .right-panel {
             flex: 1;
-            overflow-y: auto;
+            overflow: visible;
             padding: 14px 16px;
             display: flex;
             flex-direction: column;
@@ -267,7 +156,7 @@
         /* ── STAT CARDS ── */
         .stat-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             gap: 10px;
         }
 
@@ -378,31 +267,6 @@
 </head>
 <body>
 
-<!-- ══════════════ TOP BAR ══════════════ -->
-<div class="topbar">
-    <div class="topbar-left">
-        <div class="topbar-logo">
-            <i class="bi bi-shield-exclamation"></i>
-        </div>
-        <div class="topbar-title">
-            <h6>Dashboard Klasterisasi Wilayah Rawan Bencana</h6>
-            <small>Provinsi Jawa Timur, Periode 2021 – 2025</small>
-        </div>
-    </div>
-    <div class="topbar-right">
-        <button class="notif-btn">
-            <i class="bi bi-bell"></i>
-        </button>
-        <button class="notif-btn">
-            <i class="bi bi-bell-fill"></i>
-            <span class="notif-badge">5</span>
-        </button>
-        <div class="admin-chip">
-            <div class="admin-avatar"><i class="bi bi-person-fill" style="font-size:12px"></i></div>
-            <span>Admin BPBD</span>
-        </div>
-    </div>
-</div>
 
 <!-- ══════════════ MAIN ══════════════ -->
 <div class="main-content">
@@ -412,9 +276,17 @@
         <div class="panel-title">Dashboard Klasterisasi Wilayah Rawan Bencana</div>
         <div class="panel-subtitle">Provinsi Jawa Timur, Periode 2021 – 2025</div>
 
-        <select class="method-select">
-            <option>Metode: Algoritma K-Means Clustering</option>
-        </select>
+        <div style="display:flex;gap:8px;margin-bottom:10px;">
+            <input type="text" id="searchInput" placeholder="Cari nama daerah..."
+                class="form-control form-control-sm" style="font-size:11px;">
+            <select id="clusterFilter" class="form-select form-select-sm"
+                style="width:150px;font-size:11px;">
+                <option value="all">Semua</option>
+                <option value="cluster_1">Rawan Tinggi</option>
+                <option value="cluster_2">Rawan Sedang</option>
+                <option value="cluster_0">Rawan Rendah</option>
+            </select>
+        </div>
 
         <!-- MAP -->
         <div id="map"></div>
@@ -481,26 +353,12 @@
                 </div>
                 <i class="bi bi-dash-circle-fill s-icon"></i>
             </div>
-            <div class="stat-card sc-teal">
-                <div>
-                    <div class="s-num">{{ $tinggi }}</div>
-                    <div class="s-label">Kabupaten Tinggi</div>
-                </div>
-                <i class="bi bi-geo-alt-fill s-icon"></i>
-            </div>
             <div class="stat-card sc-green">
                 <div>
                     <div class="s-num">{{ $rendah }}</div>
                     <div class="s-label">Klaster Rawan Rendah</div>
                 </div>
                 <i class="bi bi-check-circle-fill s-icon"></i>
-            </div>
-            <div class="stat-card sc-purple">
-                <div>
-                    <div class="s-num">{{ $rendah }}</div>
-                    <div class="s-label">Klaster Rawan Rendah</div>
-                </div>
-                <i class="bi bi-bar-chart-fill s-icon"></i>
             </div>
         </div>
 
@@ -632,88 +490,142 @@ new Chart(document.getElementById('jenisDonut'), {
     }
 });
 
-// ── 4. LEAFLET MAP ──
-const map = L.map('map').setView([-7.5, 112.5], 7);
+// ── LEAFLET MAP ──
+const map = L.map('map').setView([-7.5, 112.5], 8);
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap'
 }).addTo(map);
 
-function getColor(cluster) {
-    if (cluster === 'cluster_1') return '#dc2626';
-    if (cluster === 'cluster_2') return '#f59e0b';
-    if (cluster === 'cluster_0') return '#16a34a';
-    return '#d1d5db';
+function getColor(c) {
+    return c === 'cluster_1' ? '#dc2626' : c === 'cluster_2' ? '#f59e0b' : c === 'cluster_0' ? '#16a34a' : '#9ca3af';
+}
+function getLabel(c) {
+    return c === 'cluster_1' ? 'Rawan Tinggi' : c === 'cluster_2' ? 'Rawan Sedang' : c === 'cluster_0' ? 'Rawan Rendah' : 'Tidak Ada Data';
+}
+function normName(str) {
+    return str.toLowerCase().replace(/\bkabupaten\b/g,'').replace(/\bkota\b/g,'').replace(/\s+/g,' ').trim();
 }
 
-fetch('/geojson/jatim_kabupaten.geojson')
+const lookup = {};
+clusterData.forEach(item => { lookup[normName(item.kabupaten)] = item; });
+
+fetch('/skripsi_pemetaan/public/geojson/jatim_kabupaten.geojson')
     .then(r => r.json())
     .then(geojson => {
-        const layer = L.geoJSON(geojson, {
-            style(feature) {
-                const name = feature.properties.NAME_2 || '';
-                const item = clusterData.find(x =>
-                    x.kabupaten.toLowerCase() === name.toLowerCase()
-                );
-                return {
-                    fillColor:   item ? getColor(item.cluster) : '#d1d5db',
-                    fillOpacity: 0.8,
-                    color:       '#ffffff',
-                    weight:      1,
-                    opacity:     1
-                };
-            },
+
+        // 1. Garis batas wilayah
+        const borderLayer = L.geoJSON(geojson, {
+            style: () => ({ fillOpacity: 0, color: '#facc15', weight: 1.5 }),
             onEachFeature(feature, lyr) {
-                const name = feature.properties.NAME_2 || '';
-                const item = clusterData.find(x =>
-                    x.kabupaten.toLowerCase() === name.toLowerCase()
-                );
-                const kategori = !item ? 'Tidak Ada Data'
-                    : item.cluster === 'cluster_1' ? 'Rawan Tinggi'
-                    : item.cluster === 'cluster_2' ? 'Rawan Sedang'
-                    : 'Rawan Rendah';
-                lyr.bindPopup(`
-                <div style="min-width:220px">
-                    <h6>${name}</h6>
-
-                    <hr>
-
-                    <b>Status :</b> ${kategori}<br>
-
-                    <b>Frekuensi :</b>
-                    ${item ? item.frekuensi : 0}<br>
-
-                    <b>Bencana Dominan :</b>
-                    ${item?.disaster_type ?? 'Tidak tersedia'}
-                </div>
-            `);
-                lyr.on('mouseover', () => lyr.setStyle({ fillOpacity: 1 }));
-                lyr.on('mouseout',  () => lyr.setStyle({ fillOpacity: 0.8 }));
-
-                if(item){
-
-                const center = lyr.getBounds().getCenter();
-
-                const color =
-                    item.cluster === 'cluster_1'
-                    ? '#dc2626'
-                    : item.cluster === 'cluster_2'
-                    ? '#f59e0b'
-                    : '#16a34a';
-
-                L.circleMarker(center,{
-                    radius:7,
-                    fillColor:color,
-                    color:'#fff',
-                    weight:2,
-                    fillOpacity:1
-                }).addTo(map);
-            }
+                const name  = feature.properties.NAME_2 || '';
+                const item  = lookup[normName(name)];
+                const color = item ? getColor(item.cluster) : '#9ca3af';
+                lyr.on('mouseover', function() { this.setStyle({ fillColor: color, fillOpacity: 0.2 }); });
+                lyr.on('mouseout',  function() { borderLayer.resetStyle(this); });
+                lyr.on('click',     function() { this.openPopup(); });
+                lyr.bindPopup(`<b>${name}</b><br>
+                    <span style="background:${color};color:#fff;padding:1px 8px;border-radius:4px;font-size:10px">${item ? getLabel(item.cluster) : '-'}</span><br>
+                    Frekuensi: <b>${item ? item.frekuensi : '-'}</b> kejadian`);
             }
         }).addTo(map);
-        map.fitBounds(layer.getBounds());
-    })
-    .catch(() => console.warn('GeoJSON belum tersedia'));
+
+        // 2. Circle marker di tiap kabupaten
+        const allMarkers = [];
+        geojson.features.forEach(feature => {
+            const name  = feature.properties.NAME_2 || '';
+            const item  = lookup[normName(name)];
+            if (!item) return;
+            const color = getColor(item.cluster);
+
+            // Centroid akurat dari rata-rata semua koordinat
+            const coords = [];
+            function extract(c) {
+                if (typeof c[0] === 'number') coords.push(c);
+                else c.forEach(extract);
+            }
+            extract(feature.geometry.coordinates);
+            const lat    = coords.reduce((s, c) => s + c[1], 0) / coords.length;
+            const lng    = coords.reduce((s, c) => s + c[0], 0) / coords.length;
+            const center = L.latLng(lat, lng);
+
+            const marker = L.marker(center, {
+            icon: L.divIcon({
+                className: '',
+                html: `<div style="width:28px;height:28px;background:#fff;border:3px solid ${color};
+                border-radius:50%;display:flex;align-items:center;justify-content:center;
+                font-size:9px;font-weight:700;box-shadow:0 2px 4px rgba(0,0,0,.3)">
+                ${item.frekuensi}
+                </div>`,
+                iconSize:[28,28],
+                iconAnchor:[14,14]
+            })
+        });
+
+        marker.addTo(map);
+
+        marker.bindPopup(`
+            <b>${name}</b><br>
+            <span style="background:${color};color:#fff;padding:1px 8px;border-radius:4px;font-size:10px">
+                ${getLabel(item.cluster)}
+            </span><br>
+            Frekuensi: <b>${item.frekuensi}</b> kejadian
+        `);
+
+        allMarkers.push({
+            marker: marker,
+            cluster: item.cluster,
+            wilayah: name.toLowerCase()
+        });
+                });
+
+        map.fitBounds(borderLayer.getBounds(), { padding: [6,6] });
+    });
+        function applyFilter(){
+        const keyword =
+            document.getElementById('searchInput')
+            .value
+            .toLowerCase();
+
+        const cluster =
+            document.getElementById('clusterFilter')
+            .value;
+
+        allMarkers.forEach(item => {
+
+            const cocokNama =
+                item.wilayah.includes(keyword);
+
+            const cocokCluster =
+                cluster === 'all'
+                ||
+                item.cluster === cluster;
+
+            if(cocokNama && cocokCluster){
+
+                if(!map.hasLayer(item.marker)){
+                    item.marker.addTo(map);
+                }
+
+            }else{
+
+                if(map.hasLayer(item.marker)){
+                    map.removeLayer(item.marker);
+                }
+
+            }
+
+        });
+    }
+
+    document
+    .getElementById('searchInput')
+    .addEventListener('keyup', applyFilter);
+
+    document
+    .getElementById('clusterFilter')
+    .addEventListener('change', applyFilter);
+
 </script>
 
 </body>
