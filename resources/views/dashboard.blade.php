@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Work+Sans:wght@400;500;600&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
@@ -13,13 +13,35 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <style>
+        :root {
+            /* ── Palet "instrumen survei" ── */
+            --ink:        #1B2430;   /* teks utama */
+            --ink-soft:   #5E6877;   /* teks sekunder */
+            --paper:      #ECEFE8;  /* latar halaman, kertas peta */
+            --surface:    #FFFFFF;   /* permukaan kartu */
+            --line:       #DBDFD4;   /* garis tepi tipis */
+
+            --signal-high: #B23A2E; /* rawan tinggi — brick red */
+            --signal-mid:  #BD8327; /* rawan sedang — ochre */
+            --signal-low:  #3C7A56; /* rawan rendah — moss green */
+            --signal-info: #2B5C73; /* info/total — teal-slate */
+            --accent-violet:#6E5A9E;
+            --accent-teal:  #2F8F82;
+        }
+
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            font-family: 'Poppins', sans-serif;
-            background: #f0f2f5;
+            font-family: 'Work Sans', sans-serif;
+            background: var(--paper);
+            color: var(--ink);
             overflow-y: auto;
             min-height: 100vh;
+        }
+
+        .num-mono {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
         }
 
         /* ── MAIN LAYOUT ── */
@@ -34,35 +56,40 @@
         .left-panel {
             width: 100%;
             min-width: 100%;
-            background: #fff;
+            background: var(--surface);
+            border: 1px solid var(--line);
             border-radius: 12px;
             padding: 12px;
             overflow-y: auto;
         }
 
         .left-panel::-webkit-scrollbar { width: 4px; }
-        .left-panel::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
+        .left-panel::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
 
         .panel-title {
-            font-size: 13px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 14px;
             font-weight: 700;
-            color: #1a202c;
+            letter-spacing: .01em;
+            color: var(--ink);
             margin-bottom: 1px;
         }
 
         .panel-subtitle {
             font-size: 10px;
-            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            color: var(--ink-soft);
             margin-bottom: 10px;
         }
 
         .method-select {
             font-size: 11px;
             padding: 5px 10px;
-            border: 1px solid #d1d5db;
+            border: 1px solid var(--line);
             border-radius: 7px;
-            color: #374151;
-            background: #fff;
+            color: var(--ink);
+            background: var(--surface);
             width: 100%;
             margin-bottom: 10px;
             cursor: pointer;
@@ -72,7 +99,7 @@
             width: 100%;
             height: 720px;
             border-radius: 10px;
-            border: 1px solid #e5e7eb;
+            border: 1px solid var(--line);
         }
 
         .map-legend {
@@ -87,7 +114,7 @@
             align-items: center;
             gap: 5px;
             font-size: 10px;
-            color: #374151;
+            color: var(--ink-soft);
         }
 
         .legend-dot {
@@ -98,9 +125,12 @@
         }
 
         .section-label {
+            font-family: 'Space Grotesk', sans-serif;
             font-size: 11px;
             font-weight: 600;
-            color: #374151;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            color: var(--ink);
             margin: 10px 0 6px;
         }
 
@@ -115,7 +145,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background: #f9fafb;
+            background: var(--paper);
             border-radius: 8px;
             padding: 7px 10px;
         }
@@ -130,14 +160,14 @@
         .cluster-row .c-name {
             font-size: 11px;
             font-weight: 600;
-            color: #374151;
+            color: var(--ink);
             flex: 1;
             margin-left: 7px;
         }
 
         .cluster-row .c-count {
             font-size: 11px;
-            color: #6b7280;
+            color: var(--ink-soft);
         }
 
         /* ── RIGHT PANEL ── */
@@ -161,37 +191,46 @@
         }
 
         .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-top: 3px solid var(--ink-soft);
             border-radius: 12px;
             padding: 12px 14px;
-            color: #fff;
+            color: var(--ink);
             display: flex;
             align-items: center;
             justify-content: space-between;
         }
 
         .stat-card .s-num {
+            font-family: 'JetBrains Mono', monospace;
             font-size: 22px;
             font-weight: 700;
             line-height: 1;
+            color: var(--ink);
         }
 
         .stat-card .s-label {
             font-size: 10px;
-            opacity: .9;
-            margin-top: 2px;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            color: var(--ink-soft);
+            margin-top: 4px;
         }
 
         .stat-card .s-icon {
-            font-size: 26px;
-            opacity: .3;
+            font-size: 24px;
+            opacity: .35;
         }
 
-        .sc-blue   { background: linear-gradient(135deg, #2563eb, #3b82f6); }
-        .sc-red    { background: linear-gradient(135deg, #dc2626, #ef4444); }
-        .sc-orange { background: linear-gradient(135deg, #d97706, #f59e0b); }
-        .sc-green  { background: linear-gradient(135deg, #16a34a, #22c55e); }
-        .sc-purple { background: linear-gradient(135deg, #7c3aed, #a78bfa); }
-        .sc-teal   { background: linear-gradient(135deg, #0d9488, #2dd4bf); }
+        .sc-blue   { border-top-color: var(--signal-info); }
+        .sc-blue   .s-icon { color: var(--signal-info); }
+        .sc-red    { border-top-color: var(--signal-high); }
+        .sc-red    .s-icon { color: var(--signal-high); }
+        .sc-orange { border-top-color: var(--signal-mid); }
+        .sc-orange .s-icon { color: var(--signal-mid); }
+        .sc-green  { border-top-color: var(--signal-low); }
+        .sc-green  .s-icon { color: var(--signal-low); }
 
         /* ── CHART ROW ── */
         .chart-grid {
@@ -201,31 +240,39 @@
         }
 
         .chart-card {
-            background: #fff;
+            background: var(--surface);
+            border: 1px solid var(--line);
             border-radius: 12px;
             padding: 12px;
-            box-shadow: 0 1px 4px rgba(0,0,0,.06);
+            box-shadow: 0 1px 3px rgba(27,36,48,.04);
         }
 
         .chart-card .cc-title {
+            font-family: 'Space Grotesk', sans-serif;
             font-size: 11px;
             font-weight: 600;
-            color: #374151;
+            text-transform: uppercase;
+            letter-spacing: .03em;
+            color: var(--ink);
             margin-bottom: 8px;
         }
 
         /* ── KARAKTERISTIK TABLE ── */
         .char-card {
-            background: #fff;
+            background: var(--surface);
+            border: 1px solid var(--line);
             border-radius: 12px;
             padding: 12px;
-            box-shadow: 0 1px 4px rgba(0,0,0,.06);
+            box-shadow: 0 1px 3px rgba(27,36,48,.04);
         }
 
         .char-card .cc-title {
+            font-family: 'Space Grotesk', sans-serif;
             font-size: 11px;
             font-weight: 600;
-            color: #374151;
+            text-transform: uppercase;
+            letter-spacing: .03em;
+            color: var(--ink);
             margin-bottom: 8px;
         }
 
@@ -236,18 +283,19 @@
         }
 
         .char-table th {
-            background: #f3f4f6;
+            background: var(--paper);
             padding: 6px 10px;
             text-align: left;
+            font-family: 'Space Grotesk', sans-serif;
             font-weight: 600;
-            color: #374151;
-            border: 1px solid #e5e7eb;
+            color: var(--ink);
+            border: 1px solid var(--line);
         }
 
         .char-table td {
             padding: 6px 10px;
-            border: 1px solid #e5e7eb;
-            color: #4b5563;
+            border: 1px solid var(--line);
+            color: var(--ink-soft);
             vertical-align: middle;
         }
 
@@ -260,9 +308,9 @@
             color: #fff;
         }
 
-        .bc-tinggi  { background: #dc2626; }
-        .bc-sedang  { background: #d97706; }
-        .bc-rendah  { background: #16a34a; }
+        .bc-tinggi  { background: var(--signal-high); }
+        .bc-sedang  { background: var(--signal-mid); }
+        .bc-rendah  { background: var(--signal-low); }
     </style>
 </head>
 <body>
@@ -293,16 +341,16 @@
 
         <div class="map-legend">
             <div class="legend-item">
-                <div class="legend-dot" style="background:#dc2626"></div>
-                Rawan Tinggi &nbsp;<strong>{{ $tinggi }}</strong>
+                <div class="legend-dot" style="background:#B23A2E"></div>
+                Rawan Tinggi &nbsp;<strong class="num-mono">{{ $tinggi }}</strong>
             </div>
             <div class="legend-item">
-                <div class="legend-dot" style="background:#f59e0b"></div>
-                Rawan Sedang &nbsp;<strong>{{ $sedang }}</strong>
+                <div class="legend-dot" style="background:#BD8327"></div>
+                Rawan Sedang &nbsp;<strong class="num-mono">{{ $sedang }}</strong>
             </div>
             <div class="legend-item">
-                <div class="legend-dot" style="background:#16a34a"></div>
-                Rawan Rendah &nbsp;<strong>{{ $rendah }}</strong>
+                <div class="legend-dot" style="background:#3C7A56"></div>
+                Rawan Rendah &nbsp;<strong class="num-mono">{{ $rendah }}</strong>
             </div>
         </div>
 
@@ -310,19 +358,19 @@
         <div class="section-label">Distribusi Kejadian per Klaster</div>
         <div class="cluster-summary">
             <div class="cluster-row">
-                <div class="dot" style="background:#dc2626"></div>
+                <div class="dot" style="background:#B23A2E"></div>
                 <span class="c-name">Rawan Tinggi</span>
-                <span class="c-count">{{ $kejadianTinggi }} kejadian</span>
+                <span class="c-count num-mono">{{ $kejadianTinggi }} kejadian</span>
             </div>
             <div class="cluster-row">
-                <div class="dot" style="background:#f59e0b"></div>
+                <div class="dot" style="background:#BD8327"></div>
                 <span class="c-name">Rawan Sedang</span>
-                <span class="c-count">{{ $kejadianSedang }} kejadian</span>
+                <span class="c-count num-mono">{{ $kejadianSedang }} kejadian</span>
             </div>
             <div class="cluster-row">
-                <div class="dot" style="background:#16a34a"></div>
+                <div class="dot" style="background:#3C7A56"></div>
                 <span class="c-name">Rawan Rendah</span>
-                <span class="c-count">{{ $kejadianRendah }} kejadian</span>
+                <span class="c-count num-mono">{{ $kejadianRendah }} kejadian</span>
             </div>
         </div>
     </div>
@@ -431,8 +479,9 @@
                 const jenisValues = @json($jenisBencana->pluck('total'));
 
 // ── CHART DEFAULTS ──
-Chart.defaults.font.family = 'Poppins';
+Chart.defaults.font.family = 'Work Sans';
 Chart.defaults.font.size   = 10;
+Chart.defaults.color       = '#5E6877';
 
 // ── 1. BAR CHART: Frekuensi per Klaster ──
 new Chart(document.getElementById('freqBarChart'), {
@@ -441,7 +490,7 @@ new Chart(document.getElementById('freqBarChart'), {
         labels: ['Rawan\nTinggi', 'Klaster Rawan\nSedang', 'Klaster Rawan\nRendah'],
         datasets: [{
             data: [kejadianTinggi, kejadianSedang, kejadianRendah],
-            backgroundColor: ['#dc2626', '#f59e0b', '#16a34a'],
+            backgroundColor: ['#B23A2E', '#BD8327', '#3C7A56'],
             borderRadius: 6,
             barThickness: 32
         }]
@@ -449,7 +498,7 @@ new Chart(document.getElementById('freqBarChart'), {
     options: {
         plugins: { legend: { display: false } },
         scales: {
-            y: { beginAtZero: true, grid: { color: '#f3f4f6' }, ticks: { font: { size: 9 } } },
+            y: { beginAtZero: true, grid: { color: '#ECEFE8' }, ticks: { font: { size: 9 } } },
             x: { grid: { display: false }, ticks: { font: { size: 9 } } }
         }
     }
@@ -464,13 +513,13 @@ new Chart(document.getElementById('jenisDonut'), {
         datasets: [{
             data: jenisValues,
             backgroundColor:[
-                '#2563eb',
-                '#dc2626',
-                '#f59e0b',
-                '#16a34a',
-                '#8b5cf6',
-                '#14b8a6',
-                '#6b7280'
+                '#2B5C73',
+                '#B23A2E',
+                '#BD8327',
+                '#3C7A56',
+                '#6E5A9E',
+                '#2F8F82',
+                '#8A8F87'
             ],
             borderWidth:2,
             borderColor:'#fff'
@@ -498,7 +547,7 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 }).addTo(map);
 
 function getColor(c) {
-    return c === 'cluster_1' ? '#dc2626' : c === 'cluster_2' ? '#f59e0b' : c === 'cluster_0' ? '#16a34a' : '#9ca3af';
+    return c === 'cluster_1' ? '#B23A2E' : c === 'cluster_2' ? '#BD8327' : c === 'cluster_0' ? '#3C7A56' : '#9ca3af';
 }
 function getLabel(c) {
     return c === 'cluster_1' ? 'Rawan Tinggi' : c === 'cluster_2' ? 'Rawan Sedang' : c === 'cluster_0' ? 'Rawan Rendah' : 'Tidak Ada Data';
@@ -533,9 +582,9 @@ fetch('/skripsi_pemetaan/public/geojson/jatim_kabupaten.geojson')
                 lyr.on('mouseover', function() { this.setStyle({ fillColor: color, fillOpacity: 0.2 }); });
                 lyr.on('mouseout',  function() { borderLayer.resetStyle(this); });
                 lyr.on('click',     function() { this.openPopup(); });
-                lyr.bindPopup(`<b>${name}</b><br>
+                lyr.bindPopup(`<b style="font-family:'Space Grotesk',sans-serif;">${name}</b><br>
                     <span style="background:${color};color:#fff;padding:1px 8px;border-radius:4px;font-size:10px">${item ? getLabel(item.cluster) : '-'}</span><br>
-                    Frekuensi: <b>${item ? item.frekuensi : '-'}</b> kejadian`);
+                    Frekuensi: <b style="font-family:'JetBrains Mono', monospace;">${item ? item.frekuensi : '-'}</b> kejadian`);
             }
         }).addTo(map);
 
@@ -585,16 +634,18 @@ fetch('/skripsi_pemetaan/public/geojson/jatim_kabupaten.geojson')
                         display:flex;
                         align-items:center;
                         justify-content:center;
+                        font-family:'JetBrains Mono', monospace;
                         font-size:9px;
-                        font-weight:700;">
+                        font-weight:700;
+                        color:#1B2430;">
                         ${item.frekuensi}
                     </div>`,
                     iconSize:[28,28]
                 })
             })
-            .bindPopup(`<b>${name}</b><br>
+            .bindPopup(`<b style="font-family:'Space Grotesk',sans-serif;">${name}</b><br>
                 <span style="background:${color};color:#fff;padding:1px 8px;border-radius:4px;font-size:10px">${getLabel(item.cluster)}</span><br>
-                Frekuensi: <b>${item.frekuensi}</b> kejadian`)
+                Frekuensi: <b class="num-mono" style="font-family:'JetBrains Mono', monospace;">${item.frekuensi}</b> kejadian`)
             .addTo(map);
 
             allMarkers.push({
