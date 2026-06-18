@@ -510,12 +510,21 @@ function normName(str) {
 const lookup = {};
 clusterData.forEach(item => { lookup[normName(item.kabupaten)] = item; });
 
+// FIX #1: allMarkers harus dideklarasikan di scope luar (global),
+// supaya bisa diakses oleh applyFilter() yang juga berada di luar
+// callback fetch().then(...). Sebelumnya ini dideklarasikan dengan
+// `const` DI DALAM callback, sehingga hilang begitu callback selesai
+// dan applyFilter() melempar error "allMarkers is not defined" ->
+// itulah sebabnya search & filter cluster berhenti berfungsi.
+let allMarkers = [];
+let borderLayer = null;
+
 fetch('/skripsi_pemetaan/public/geojson/jatim_kabupaten.geojson')
     .then(r => r.json())
     .then(geojson => {
 
         // 1. Garis batas wilayah
-        const borderLayer = L.geoJSON(geojson, {
+        borderLayer = L.geoJSON(geojson, {
             style: () => ({ fillOpacity: 0, color: '#facc15', weight: 1.5 }),
             onEachFeature(feature, lyr) {
                 const name  = feature.properties.NAME_2 || '';
@@ -531,100 +540,120 @@ fetch('/skripsi_pemetaan/public/geojson/jatim_kabupaten.geojson')
         }).addTo(map);
 
         // 2. Circle marker di tiap kabupaten
-        const allMarkers = [];
         geojson.features.forEach(feature => {
-            const name  = feature.properties.NAME_2 || '';
-            const item  = lookup[normName(name)];
+
+            const name = feature.properties.NAME_2 || '';
+            const item = lookup[normName(name)];
+
             if (!item) return;
+
             const color = getColor(item.cluster);
 
-            // Centroid akurat dari rata-rata semua koordinat
             const coords = [];
-            function extract(c) {
-                if (typeof c[0] === 'number') coords.push(c);
-                else c.forEach(extract);
+
+            function extract(c){
+                if(typeof c[0] === 'number'){
+                    coords.push(c);
+                }else{
+                    c.forEach(extract);
+                }
             }
+
             extract(feature.geometry.coordinates);
-            const lat    = coords.reduce((s, c) => s + c[1], 0) / coords.length;
-            const lng    = coords.reduce((s, c) => s + c[0], 0) / coords.length;
-            const center = L.latLng(lat, lng);
 
-            const marker = L.marker(center, {
-            icon: L.divIcon({
-                className: '',
-                html: `<div style="width:28px;height:28px;background:#fff;border:3px solid ${color};
-                border-radius:50%;display:flex;align-items:center;justify-content:center;
-                font-size:9px;font-weight:700;box-shadow:0 2px 4px rgba(0,0,0,.3)">
-                ${item.frekuensi}
-                </div>`,
-                iconSize:[28,28],
-                iconAnchor:[14,14]
+            const lat =
+                coords.reduce((s,c)=>s+c[1],0) /
+                coords.length;
+
+            const lng =
+                coords.reduce((s,c)=>s+c[0],0) /
+                coords.length;
+
+            // FIX #2: bindPopup ditambahkan ke marker juga.
+            // Sebelumnya marker (lingkaran angka) menutupi polygon
+            // di bawahnya sehingga klik tertangkap oleh marker yang
+            // tidak punya popup -> klik di titik rawan terasa "mati".
+            const marker = L.marker([lat,lng],{
+                icon:L.divIcon({
+                    className:'',
+                    html:`<div style="
+                        width:28px;
+                        height:28px;
+                        background:#fff;
+                        border:3px solid ${color};
+                        border-radius:50%;
+                        display:flex;
+                        align-items:center;
+                        justify-content:center;
+                        font-size:9px;
+                        font-weight:700;">
+                        ${item.frekuensi}
+                    </div>`,
+                    iconSize:[28,28]
+                })
             })
+            .bindPopup(`<b>${name}</b><br>
+                <span style="background:${color};color:#fff;padding:1px 8px;border-radius:4px;font-size:10px">${getLabel(item.cluster)}</span><br>
+                Frekuensi: <b>${item.frekuensi}</b> kejadian`)
+            .addTo(map);
+
+            allMarkers.push({
+                marker:marker,
+                cluster:item.cluster,
+                wilayah:name.toLowerCase()
+            });
+
         });
-
-        marker.addTo(map);
-
-        marker.bindPopup(`
-            <b>${name}</b><br>
-            <span style="background:${color};color:#fff;padding:1px 8px;border-radius:4px;font-size:10px">
-                ${getLabel(item.cluster)}
-            </span><br>
-            Frekuensi: <b>${item.frekuensi}</b> kejadian
-        `);
-
-        allMarkers.push({
-            marker: marker,
-            cluster: item.cluster,
-            wilayah: name.toLowerCase()
-        });
-                });
 
         map.fitBounds(borderLayer.getBounds(), { padding: [6,6] });
     });
-        function applyFilter(){
-        const keyword =
-            document.getElementById('searchInput')
-            .value
-            .toLowerCase();
 
-        const cluster =
-            document.getElementById('clusterFilter')
-            .value;
+function applyFilter(){
+    const keyword =
+        document.getElementById('searchInput')
+        .value
+        .trim()
+        .toLowerCase();
 
-        allMarkers.forEach(item => {
+    const cluster =
+        document.getElementById('clusterFilter')
+        .value;
 
-            const cocokNama =
-                item.wilayah.includes(keyword);
+    allMarkers.forEach(m => {
 
-            const cocokCluster =
-                cluster === 'all'
-                ||
-                item.cluster === cluster;
+        const namaMatch =
+            m.wilayah.includes(keyword);
 
-            if(cocokNama && cocokCluster){
+        const clusterMatch =
+            cluster === 'all'
+            ||
+            m.cluster === cluster;
 
-                if(!map.hasLayer(item.marker)){
-                    item.marker.addTo(map);
-                }
+        if(namaMatch && clusterMatch){
 
-            }else{
-
-                if(map.hasLayer(item.marker)){
-                    map.removeLayer(item.marker);
-                }
-
+            if(!map.hasLayer(m.marker)){
+                m.marker.addTo(map);
             }
 
-        });
-    }
+        }else{
 
-    document
-    .getElementById('searchInput')
-    .addEventListener('keyup', applyFilter);
+            if(map.hasLayer(m.marker)){
+                map.removeLayer(m.marker);
+            }
 
-    document
-    .getElementById('clusterFilter')
-    .addEventListener('change', applyFilter);
+        }
+
+    });
+
+}
+
+document
+.getElementById('searchInput')
+.addEventListener('input', applyFilter);
+
+document
+.getElementById('clusterFilter')
+.addEventListener('change', applyFilter);
 
 </script>
 
