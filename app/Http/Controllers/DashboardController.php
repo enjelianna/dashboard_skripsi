@@ -14,37 +14,22 @@ class DashboardController extends Controller
         $sedang = HasilCluster::where('cluster', 'cluster_2')->count();
         $rendah = HasilCluster::where('cluster', 'cluster_0')->count();
 
-        // ── Total kejadian ──
-        $totalKejadian  = HasilCluster::sum('frekuensi');
-        $kejadianTinggi = HasilCluster::where('cluster', 'cluster_1')->sum('frekuensi');
-        $kejadianSedang = HasilCluster::where('cluster', 'cluster_2')->sum('frekuensi');
-        $kejadianRendah = HasilCluster::where('cluster', 'cluster_0')->sum('frekuensi');
+        // ── Total kejadian (sum) ──
+        $totalKejadian = HasilCluster::sum('frekuensi');
 
+        // ── Rata-rata frekuensi per cluster ──
+        $kejadianTinggi = round(HasilCluster::where('cluster', 'cluster_1')->avg('frekuensi'));
+        $kejadianSedang = round(HasilCluster::where('cluster', 'cluster_2')->avg('frekuensi'));
+        $kejadianRendah = round(HasilCluster::where('cluster', 'cluster_0')->avg('frekuensi'));
 
-        // rata rata kejadian//
-        $kejadianTinggi = round(
-            HasilCluster::where('cluster','cluster_1')
-            ->avg('frekuensi')
-        );
-
-        $kejadianSedang = round(
-            HasilCluster::where('cluster','cluster_2')
-            ->avg('frekuensi')
-        );
-
-        $kejadianRendah = round(
-            HasilCluster::where('cluster','cluster_0')
-            ->avg('frekuensi')
-        );
-
-        // ── Jenis bencana dominan (untuk donut chart) ──
+        // ── Jenis bencana dominan (donut chart) ──
         $jenisBencana = DB::table('data_bencana')
             ->select('disaster_type', DB::raw('COUNT(*) as total'))
             ->groupBy('disaster_type')
             ->orderByDesc('total')
             ->get();
 
-        // ── Bencana dominan tiap cluster (untuk tabel karakteristik) ──
+        // ── Bencana dominan tiap cluster (tabel karakteristik) ──
         $dominanTinggi = DB::table('v_bencana_dominan as v')
             ->join('cluster_daerah_skripsi as c',
                 DB::raw('LOWER(TRIM(v.regency))'), '=',
@@ -75,17 +60,28 @@ class DashboardController extends Controller
             ->orderByDesc('ttl')
             ->first();
 
-        // ── Data peta: normalisasi nama agar cocok dengan GeoJSON ──
-        // GeoJSON NAME_2 format: "Bangkalan", "Kota Blitar", "Kota Malang"
-        // DB format            : "Bangkalan Kabupaten", "Blitar Kota", "Malang Kota"
-        // Normalisasi: buang kata Kabupaten/Kota, trim → "bangkalan", "blitar", "malang"
-        // JS di blade juga melakukan hal yang sama, jadi matching pasti cocok.
-
-        $mapData = DB::table('cluster_daerah_skripsi')
+        // ── Data peta + jenisDominan per kabupaten ──
+        // Subquery: ambil disaster_type dengan total terbanyak per regency
+        $mapData = DB::table('cluster_daerah_skripsi as c')
+            ->leftJoin(
+                DB::raw('(
+                    SELECT regency,
+                           disaster_type,
+                           RANK() OVER (PARTITION BY regency ORDER BY total DESC) AS rn
+                    FROM v_bencana_dominan
+                ) AS vd'),
+                function ($join) {
+                    $join->on(
+                        DB::raw('LOWER(TRIM(vd.regency))'), '=',
+                        DB::raw('LOWER(TRIM(c.`Kabupaten/Kota`))')
+                    )->where('vd.rn', '=', 1);
+                }
+            )
             ->select(
-                DB::raw('`Kabupaten/Kota` as kabupaten'),
-                DB::raw('Cluster as cluster'),
-                DB::raw('Frekuensi as frekuensi')
+                DB::raw('c.`Kabupaten/Kota` AS kabupaten'),
+                DB::raw('c.Cluster            AS cluster'),
+                DB::raw('c.Frekuensi          AS frekuensi'),
+                DB::raw('vd.disaster_type     AS jenisDominan')
             )
             ->get();
 

@@ -14,17 +14,15 @@
 
     <style>
         :root {
-            /* ── Palet "instrumen survei" ── */
-            --ink:        #1B2430;   /* teks utama */
-            --ink-soft:   #5E6877;   /* teks sekunder */
-            --paper:      #ECEFE8;  /* latar halaman, kertas peta */
-            --surface:    #FFFFFF;   /* permukaan kartu */
-            --line:       #DBDFD4;   /* garis tepi tipis */
-
-            --signal-high: #B23A2E; /* rawan tinggi — brick red */
-            --signal-mid:  #BD8327; /* rawan sedang — ochre */
-            --signal-low:  #3C7A56; /* rawan rendah — moss green */
-            --signal-info: #2B5C73; /* info/total — teal-slate */
+            --ink:          #1B2430;
+            --ink-soft:     #5E6877;
+            --paper:        #ECEFE8;
+            --surface:      #FFFFFF;
+            --line:         #DBDFD4;
+            --signal-high:  #B23A2E;
+            --signal-mid:   #BD8327;
+            --signal-low:   #3C7A56;
+            --signal-info:  #2B5C73;
             --accent-violet:#6E5A9E;
             --accent-teal:  #2F8F82;
         }
@@ -41,7 +39,6 @@
             font-family: 'Work Sans', sans-serif;
             background: var(--paper);
             color: var(--ink);
-            overflow-y: auto;
             min-height: 100vh;
         }
 
@@ -52,41 +49,33 @@
             font-weight: 600;
         }
 
-        /* ══════════════════════════════════════
-           MAIN LAYOUT — default: desktop (≥993px)
-           ══════════════════════════════════════ */
+        /* ══════════════════════
+           LAYOUT
+        ══════════════════════ */
         .main-content {
             display: grid;
             grid-template-columns: 52% 48%;
-            align-items: stretch;  /* left & right panel sejajar tingginya */
             gap: 12px;
             padding: 12px;
             min-height: 100vh;
-            max-width: 100%;
         }
 
         /* ── LEFT PANEL ── */
         .left-panel {
             width: 100%;
-            min-width: 0;          /* FIX: cegah grid item melebar di luar kolom */
+            min-width: 0;
             background: var(--surface);
             border: 1px solid var(--line);
             border-radius: 12px;
             padding: 12px;
-            overflow-y: auto;
-            overflow-x: hidden;
             display: flex;
             flex-direction: column;
         }
-
-        .left-panel::-webkit-scrollbar { width: 4px; }
-        .left-panel::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
 
         .panel-title {
             font-family: 'Space Grotesk', sans-serif;
             font-size: 14px;
             font-weight: 700;
-            letter-spacing: .01em;
             color: var(--ink);
             margin-bottom: 1px;
         }
@@ -99,42 +88,189 @@
             margin-bottom: 10px;
         }
 
-        .search-filter-row {
-            display: flex;
-            gap: 8px;
+        /* ── SEARCH AREA ── */
+        .search-area {
             margin-bottom: 10px;
-            flex-wrap: wrap;
             flex-shrink: 0;
         }
 
-        .search-filter-row .form-control,
-        .search-filter-row .form-select {
-            min-width: 0; /* FIX: cegah input/select mendorong layout melebar */
+        .search-row {
+            display: flex;
+            gap: 8px;
+            align-items: flex-start;
+            flex-wrap: wrap;
         }
 
-        #searchInput { flex: 1 1 140px; }
-        #clusterFilter { flex: 1 1 130px; max-width: 100%; }
+        /* Wrapper posisi relative agar dropdown absolut mengikutinya */
+        .search-input-wrap {
+            position: relative;
+            flex: 1 1 160px;
+            min-width: 0;
+        }
 
-        .method-select {
+        .search-input-wrap input {
+            width: 100%;
             font-size: 11px;
-            padding: 5px 10px;
+            padding: 6px 28px 6px 10px;
             border: 1px solid var(--line);
             border-radius: 7px;
-            color: var(--ink);
             background: var(--surface);
-            width: 100%;
-            margin-bottom: 10px;
+            color: var(--ink);
+            outline: none;
+            font-family: 'Work Sans', sans-serif;
+        }
+
+        .search-input-wrap input:focus {
+            border-color: var(--signal-info);
+        }
+
+        /* Tombol ✕ di dalam input */
+        .clear-input-btn {
+            position: absolute;
+            right: 7px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--ink-soft);
+            font-size: 13px;
+            line-height: 1;
+            padding: 0;
+            display: none;
+        }
+
+        .clear-input-btn.visible { display: block; }
+
+        /* Dropdown autocomplete */
+        .search-dropdown {
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(27,36,48,.12);
+            overflow: hidden;
+            display: none;
+        }
+
+        .search-dropdown.open { display: block; }
+
+        .dropdown-item {
+            padding: 7px 12px;
+            font-size: 11px;
+            cursor: pointer;
+            color: var(--ink);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 1px solid var(--line);
+            transition: background .1s;
+        }
+
+        .dropdown-item:last-child { border-bottom: none; }
+        .dropdown-item:hover,
+        .dropdown-item.kbd-active { background: var(--paper); }
+
+        .dropdown-item .di-name { flex: 1; font-weight: 600; }
+
+        .dropdown-item .di-badge {
+            font-size: 9px;
+            padding: 2px 7px;
+            border-radius: 4px;
+            color: #fff;
+            flex-shrink: 0;
+        }
+
+        .di-badge.bc-tinggi { background: var(--signal-high); }
+        .di-badge.bc-sedang { background: var(--signal-mid); }
+        .di-badge.bc-rendah { background: var(--signal-low); }
+
+        .dropdown-empty {
+            padding: 10px 12px;
+            font-size: 11px;
+            color: var(--ink-soft);
+            text-align: center;
+        }
+
+        /* Tags wilayah terpilih */
+        .tags-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 7px;
+        }
+
+        .tag-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 3px 8px 3px 10px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .tag-item.tc-tinggi { background: var(--signal-high); }
+        .tag-item.tc-sedang { background: var(--signal-mid); }
+        .tag-item.tc-rendah { background: var(--signal-low); }
+
+        .tag-remove {
+            background: rgba(255,255,255,.3);
+            border: none;
+            color: #fff;
+            cursor: pointer;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            font-size: 10px;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            flex-shrink: 0;
+        }
+
+        .tag-remove:hover { background: rgba(255,255,255,.5); }
+
+        .clear-all-btn {
+            font-size: 10px;
+            color: var(--ink-soft);
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 3px 6px;
+            border-radius: 5px;
+            text-decoration: underline;
+            text-underline-offset: 2px;
+            align-self: center;
+        }
+
+        .clear-all-btn:hover { color: var(--signal-high); }
+
+        /* Cluster filter select */
+        #clusterFilter {
+            flex: 0 0 auto;
+            font-size: 11px;
+            padding: 5px 8px;
+            border: 1px solid var(--line);
+            border-radius: 7px;
+            background: var(--surface);
+            color: var(--ink);
+            font-family: 'Work Sans', sans-serif;
             cursor: pointer;
         }
 
-        /* #map mengisi SISA tinggi left-panel (flex:1), sehingga
-           left-panel otomatis menyamai tinggi right-panel di desktop
-           tanpa ruang kosong di bawahnya. min-height sebagai fallback
-           kalau flex context tidak tersedia (mis. saat dicetak). */
+        /* MAP */
         #map {
             width: 100%;
             flex: 1 1 auto;
-            min-height: 420px;
+            min-height: 380px;
             border-radius: 10px;
             border: 1px solid var(--line);
         }
@@ -163,69 +299,41 @@
             flex-shrink: 0;
         }
 
-        .section-label {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: .04em;
-            color: var(--ink);
-            margin: 10px 0 6px;
-        }
-
-        /* Cluster summary table (bottom-left) */
-        .cluster-summary {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .cluster-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: var(--paper);
-            border-radius: 8px;
-            padding: 7px 10px;
-            flex-wrap: wrap;
-            gap: 4px;
-        }
-
-        .cluster-row .dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            flex-shrink: 0;
-        }
-
-        .cluster-row .c-name {
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--ink);
-            flex: 1;
-            margin-left: 7px;
-            min-width: 80px;
-        }
-
-        .cluster-row .c-count {
-            font-size: 11px;
-            color: var(--ink-soft);
-            white-space: nowrap;
-        }
-
         /* ── RIGHT PANEL ── */
         .right-panel {
-            flex: 1;
-            min-width: 0;          /* FIX: cegah grid item melebar di luar kolom */
-            overflow: visible;
+            min-width: 0;
             padding: 14px 16px;
             display: flex;
             flex-direction: column;
             gap: 12px;
         }
 
-        .right-panel::-webkit-scrollbar { width: 4px; }
-        .right-panel::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
+        /* Banner filter aktif */
+        .filter-info {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 12px;
+            background: #EBF3FB;
+            border: 1px solid #B5D4F4;
+            border-radius: 8px;
+            font-size: 11px;
+            color: var(--signal-info);
+        }
+
+        .filter-info.visible { display: flex; }
+        .filter-info strong { font-weight: 600; }
+
+        .filter-info-clear {
+            margin-left: auto;
+            background: none;
+            border: none;
+            color: var(--signal-info);
+            cursor: pointer;
+            font-size: 11px;
+            text-decoration: underline;
+            padding: 0;
+        }
 
         /* ── STAT CARDS ── */
         .stat-grid {
@@ -240,7 +348,6 @@
             border-top: 3px solid var(--ink-soft);
             border-radius: 12px;
             padding: 12px 14px;
-            color: var(--ink);
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -271,16 +378,12 @@
             margin-left: 8px;
         }
 
-        .sc-blue   { border-top-color: var(--signal-info); }
-        .sc-blue   .s-icon { color: var(--signal-info); }
-        .sc-red    { border-top-color: var(--signal-high); }
-        .sc-red    .s-icon { color: var(--signal-high); }
-        .sc-orange { border-top-color: var(--signal-mid); }
-        .sc-orange .s-icon { color: var(--signal-mid); }
-        .sc-green  { border-top-color: var(--signal-low); }
-        .sc-green  .s-icon { color: var(--signal-low); }
+        .sc-blue   { border-top-color: var(--signal-info); }  .sc-blue   .s-icon { color: var(--signal-info); }
+        .sc-red    { border-top-color: var(--signal-high); }  .sc-red    .s-icon { color: var(--signal-high); }
+        .sc-orange { border-top-color: var(--signal-mid); }   .sc-orange .s-icon { color: var(--signal-mid); }
+        .sc-green  { border-top-color: var(--signal-low); }   .sc-green  .s-icon { color: var(--signal-low); }
 
-        /* ── CHART ROW ── */
+        /* ── CHART GRID ── */
         .chart-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -292,7 +395,6 @@
             border: 1px solid var(--line);
             border-radius: 12px;
             padding: 12px;
-            box-shadow: 0 1px 3px rgba(27,36,48,.04);
             min-width: 0;
             overflow: hidden;
         }
@@ -307,75 +409,25 @@
             margin-bottom: 8px;
         }
 
-        .chart-card canvas {
-            max-width: 100%;
-        }
-
-        /* Wrapper dengan tinggi tetap — mencegah canvas Chart.js
-           (maintainAspectRatio:false) memanjang tak terbatas ke bawah,
-           karena tanpa parent bertinggi pasti, chart akan mengikuti
-           tinggi konten yang justru ditentukan oleh canvas itu sendiri. */
         .chart-box {
             position: relative;
             width: 100%;
-            height: 220px;
+            height: 210px;
         }
 
-        .chart-box canvas {
-            width: 100% !important;
-            height: 100% !important;
-        }
+        .chart-box canvas { width: 100% !important; height: 100% !important; }
 
-        @media (max-width: 992px) {
-            .chart-box { height: 200px; }
-        }
-
-        @media (max-width: 576px) {
-            .chart-box { height: 180px; }
-        }
-
-        /* ── DONUT CHART: scroll horizontal khusus ──
-           Donut "Jenis Bencana Dominan" punya legend yang bisa
-           panjang (banyak jenis bencana). Daripada legend terpotong
-           atau memaksa diperkecil sampai tidak terbaca, beri
-           .donut-box lebar minimum yang lega, lalu bungkus dengan
-           .donut-scroll yang overflow-x:auto — sehingga jika legend
-           lebih lebar dari card, user bisa scroll ke samping untuk
-           melihat semua item tanpa ada info yang hilang. */
-        .donut-scroll {
-            width: 100%;
-            overflow-x: auto;
-            overflow-y: hidden;
-            -webkit-overflow-scrolling: touch;
-        }
-
+        .donut-scroll { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
         .donut-scroll::-webkit-scrollbar { height: 6px; }
-        .donut-scroll::-webkit-scrollbar-thumb {
-            background: var(--line);
-            border-radius: 4px;
-        }
+        .donut-scroll::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+        .donut-box { min-width: 320px; }
 
-        .donut-box {
-            min-width: 360px; /* cukup lega utk donut + legend kanan */
-        }
-
-        @media (max-width: 992px) {
-            .donut-box { min-width: 320px; }
-        }
-
-        @media (max-width: 576px) {
-            /* Di mobile legend dipindah ke bawah (lihat JS), jadi
-               donut tidak perlu selebar versi legend-di-kanan */
-            .donut-box { min-width: 240px; height: 260px; }
-        }
-
-        /* ── KARAKTERISTIK TABLE ── */
+        /* ── DISTRIBUSI + CHAR CARDS ── */
         .char-card {
             background: var(--surface);
             border: 1px solid var(--line);
             border-radius: 12px;
             padding: 12px;
-            box-shadow: 0 1px 3px rgba(27,36,48,.04);
             min-width: 0;
         }
 
@@ -389,17 +441,28 @@
             margin-bottom: 8px;
         }
 
-        /* Wrapper supaya tabel bisa di-scroll horizontal di layar sempit
-           tanpa mendorong layout keseluruhan melebar */
-        .table-scroll {
-            width: 100%;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
+        .cluster-summary { display: flex; flex-direction: column; gap: 6px; }
+
+        .cluster-row {
+            display: flex;
+            align-items: center;
+            background: var(--paper);
+            border-radius: 8px;
+            padding: 7px 10px;
+            gap: 4px;
+            flex-wrap: wrap;
+            justify-content: space-between;
         }
+
+        .cluster-row .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+        .cluster-row .c-name { font-size: 11px; font-weight: 600; color: var(--ink); flex: 1; margin-left: 7px; }
+        .cluster-row .c-count { font-size: 11px; color: var(--ink-soft); white-space: nowrap; font-family: 'JetBrains Mono', monospace; font-weight: 600; }
+
+        .table-scroll { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
 
         .char-table {
             width: 100%;
-            min-width: 480px;   /* jaga keterbacaan kolom, scroll jika sempit */
+            min-width: 460px;
             border-collapse: collapse;
             font-size: 11px;
         }
@@ -432,106 +495,42 @@
             white-space: nowrap;
         }
 
-        .bc-tinggi  { background: var(--signal-high); }
-        .bc-sedang  { background: var(--signal-mid); }
-        .bc-rendah  { background: var(--signal-low); }
+        .bc-tinggi { background: var(--signal-high); }
+        .bc-sedang { background: var(--signal-mid); }
+        .bc-rendah { background: var(--signal-low); }
 
-        /* ══════════════════════════════════════
-           BREAKPOINT 1 — Tablet & layar sempit
-           (≤ 992px): map masih cukup lega, tapi
-           layout 2-kolom mulai stack jadi 1 kolom
-           ══════════════════════════════════════ */
+        /* ══════════════════════
+           RESPONSIVE
+        ══════════════════════ */
         @media (max-width: 992px) {
-            .main-content {
-                grid-template-columns: 1fr;
-                padding: 10px;
-                gap: 10px;
-            }
-
-            #map { height: 480px; flex: none; }
-
-            .stat-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .chart-grid {
-                grid-template-columns: 1fr;
-            }
+            .main-content { grid-template-columns: 1fr; }
+            #map { height: 460px; flex: none; }
+            .stat-grid { grid-template-columns: repeat(2,1fr); }
+            .chart-grid { grid-template-columns: 1fr; }
+            .chart-box { height: 190px; }
         }
 
-        /* ══════════════════════════════════════
-           BREAKPOINT 2 — Mobile (≤ 576px)
-           Semua elemen full width, padding dan
-           ukuran font diperkecil agar tidak
-           "kanan-kiri" / overflow di HP.
-           ══════════════════════════════════════ */
         @media (max-width: 576px) {
-            .main-content {
-                padding: 8px;
-                gap: 8px;
-            }
-
-            .left-panel,
-            .right-panel {
-                padding: 10px;
-            }
-
-            .right-panel { padding: 10px; }
-
-            .panel-title { font-size: 13px; }
-            .panel-subtitle { font-size: 9px; }
-
-            .search-filter-row {
-                flex-direction: column;
-            }
-
-            #searchInput,
-            #clusterFilter {
-                width: 100%;
-                flex: 1 1 auto;
-            }
-
-            #map { height: 320px; flex: none; }
-
-            .map-legend {
-                gap: 8px 14px;
-                justify-content: space-between;
-            }
-
-            .stat-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 8px;
-            }
-
-            .stat-card {
-                padding: 10px;
-            }
-
+            .main-content { padding: 8px; gap: 8px; }
+            .left-panel, .right-panel { padding: 10px; }
+            #map { height: 300px; flex: none; }
+            .search-row { flex-direction: column; }
+            #clusterFilter { width: 100%; }
+            .stat-grid { grid-template-columns: repeat(2,1fr); gap: 8px; }
+            .stat-card { padding: 10px; }
             .stat-card .s-num { font-size: 18px; }
             .stat-card .s-icon { font-size: 20px; }
-
-            .chart-card,
-            .char-card {
-                padding: 10px;
-            }
-
-            .char-table {
-                font-size: 10px;
-            }
+            .chart-box { height: 175px; }
+            .donut-box { min-width: 240px; }
         }
 
-        /* Layar sangat kecil (≤ 380px): stat cards jadi 1 kolom */
         @media (max-width: 380px) {
-            .stat-grid {
-                grid-template-columns: 1fr;
-            }
+            .stat-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
 
-
-<!-- ══════════════ MAIN ══════════════ -->
 <div class="main-content">
 
     <!-- ══ LEFT PANEL ══ -->
@@ -539,16 +538,23 @@
         <div class="panel-title">Dashboard Klasterisasi Wilayah Rawan Bencana</div>
         <div class="panel-subtitle">Provinsi Jawa Timur, Periode 2021 – 2025</div>
 
-        <div class="search-filter-row">
-            <input type="text" id="searchInput" placeholder="Cari nama daerah..."
-                class="form-control form-control-sm" style="font-size:11px;">
-            <select id="clusterFilter" class="form-select form-select-sm"
-                style="font-size:11px;">
-                <option value="all">Semua</option>
-                <option value="cluster_1">Rawan Tinggi</option>
-                <option value="cluster_2">Rawan Sedang</option>
-                <option value="cluster_0">Rawan Rendah</option>
-            </select>
+        <!-- SEARCH -->
+        <div class="search-area">
+            <div class="search-row">
+                <div class="search-input-wrap">
+                    <input type="text" id="searchInput"
+                        placeholder="Cari dan pilih wilayah..." autocomplete="off">
+                    <button class="clear-input-btn" id="clearInputBtn" title="Hapus teks">✕</button>
+                    <div class="search-dropdown" id="searchDropdown"></div>
+                </div>
+                <select id="clusterFilter">
+                    <option value="all">Semua Klaster</option>
+                    <option value="cluster_1">Rawan Tinggi</option>
+                    <option value="cluster_2">Rawan Sedang</option>
+                    <option value="cluster_0">Rawan Rendah</option>
+                </select>
+            </div>
+            <div class="tags-row" id="tagsRow"></div>
         </div>
 
         <!-- MAP -->
@@ -557,15 +563,15 @@
         <div class="map-legend">
             <div class="legend-item">
                 <div class="legend-dot" style="background:#B23A2E"></div>
-                Rawan Tinggi &nbsp;<strong class="num-mono">{{ $tinggi }}</strong>
+                Rawan Tinggi &nbsp;<strong class="num-mono" id="lgTinggi">{{ $tinggi }}</strong>
             </div>
             <div class="legend-item">
                 <div class="legend-dot" style="background:#BD8327"></div>
-                Rawan Sedang &nbsp;<strong class="num-mono">{{ $sedang }}</strong>
+                Rawan Sedang &nbsp;<strong class="num-mono" id="lgSedang">{{ $sedang }}</strong>
             </div>
             <div class="legend-item">
                 <div class="legend-dot" style="background:#3C7A56"></div>
-                Rawan Rendah &nbsp;<strong class="num-mono">{{ $rendah }}</strong>
+                Rawan Rendah &nbsp;<strong class="num-mono" id="lgRendah">{{ $rendah }}</strong>
             </div>
         </div>
     </div>
@@ -573,71 +579,75 @@
     <!-- ══ RIGHT PANEL ══ -->
     <div class="right-panel">
 
+        <!-- FILTER INFO BANNER -->
+        <div class="filter-info" id="filterInfo">
+            <i class="bi bi-funnel-fill" style="font-size:12px"></i>
+            <span>Menampilkan: <strong id="filterInfoText"></strong></span>
+            <button class="filter-info-clear" id="filterInfoClear">Reset filter</button>
+        </div>
+
         <!-- STAT CARDS -->
         <div class="stat-grid">
             <div class="stat-card sc-blue">
                 <div>
-                    <div class="s-num">{{ number_format($totalKejadian) }}</div>
+                    <div class="s-num" id="statTotal">{{ number_format($totalKejadian) }}</div>
                     <div class="s-label">Total Kejadian</div>
                 </div>
                 <i class="bi bi-activity s-icon"></i>
             </div>
             <div class="stat-card sc-red">
                 <div>
-                    <div class="s-num">{{ $tinggi }}</div>
+                    <div class="s-num" id="statTinggi">{{ $tinggi }}</div>
                     <div class="s-label">Klaster Rawan Tinggi</div>
                 </div>
                 <i class="bi bi-exclamation-triangle-fill s-icon"></i>
             </div>
             <div class="stat-card sc-orange">
                 <div>
-                    <div class="s-num">{{ $sedang }}</div>
+                    <div class="s-num" id="statSedang">{{ $sedang }}</div>
                     <div class="s-label">Klaster Rawan Sedang</div>
                 </div>
                 <i class="bi bi-dash-circle-fill s-icon"></i>
             </div>
             <div class="stat-card sc-green">
                 <div>
-                    <div class="s-num">{{ $rendah }}</div>
+                    <div class="s-num" id="statRendah">{{ $rendah }}</div>
                     <div class="s-label">Klaster Rawan Rendah</div>
                 </div>
                 <i class="bi bi-check-circle-fill s-icon"></i>
             </div>
         </div>
 
-        <!-- DISTRIBUSI KEJADIAN PER KLASTER -->
+        <!-- DISTRIBUSI -->
         <div class="char-card">
             <div class="cc-title">Distribusi Kejadian per Klaster</div>
             <div class="cluster-summary">
                 <div class="cluster-row">
                     <div class="dot" style="background:#B23A2E"></div>
                     <span class="c-name">Rawan Tinggi</span>
-                    <span class="c-count num-mono">{{ $kejadianTinggi }} kejadian</span>
+                    <span class="c-count" id="distTinggi">{{ number_format($kejadianTinggi) }} kejadian</span>
                 </div>
                 <div class="cluster-row">
                     <div class="dot" style="background:#BD8327"></div>
                     <span class="c-name">Rawan Sedang</span>
-                    <span class="c-count num-mono">{{ $kejadianSedang }} kejadian</span>
+                    <span class="c-count" id="distSedang">{{ number_format($kejadianSedang) }} kejadian</span>
                 </div>
                 <div class="cluster-row">
                     <div class="dot" style="background:#3C7A56"></div>
                     <span class="c-name">Rawan Rendah</span>
-                    <span class="c-count num-mono">{{ $kejadianRendah }} kejadian</span>
+                    <span class="c-count" id="distRendah">{{ number_format($kejadianRendah) }} kejadian</span>
                 </div>
             </div>
         </div>
 
-        <!-- CHART ROW -->
+        <!-- CHARTS -->
         <div class="chart-grid">
-            <!-- Bar: Frekuensi per Klaster -->
             <div class="chart-card">
                 <div class="cc-title">Frekuensi Kejadian per Klaster</div>
                 <div class="chart-box">
                     <canvas id="freqBarChart"></canvas>
                 </div>
             </div>
-
-            <!-- Donut: Jenis Bencana -->
             <div class="chart-card">
                 <div class="cc-title">Jenis Bencana Dominan</div>
                 <div class="donut-scroll">
@@ -646,10 +656,9 @@
                     </div>
                 </div>
             </div>
-
         </div>
 
-        <!-- KARAKTERISTIK TABLE -->
+        <!-- TABEL KARAKTERISTIK -->
         <div class="char-card">
             <div class="cc-title">Ringkasan Karakteristik Tiap Klaster</div>
             <div class="table-scroll">
@@ -658,31 +667,29 @@
                         <tr>
                             <th>Klaster</th>
                             <th>Keterangan</th>
-                            <th>Jenis Bencana Dominan</th>
+                            <th>Bencana Dominan</th>
                             <th>Wilayah Terdampak</th>
                         </tr>
                     </thead>
-                    <tbody>
-                    <tr>
-                        <td><span class="badge-cluster bc-tinggi">Rawan Tinggi</span></td>
-                        <td>Frekuensi Kejadian Tinggi</td>
-                        <td>{{ $dominanTinggi->disaster_type ?? '-' }}</td>
-                        <td>{{ $tinggi }} Kabupaten/Kota</td>
-                    </tr>
-
-                    <tr>
-                        <td><span class="badge-cluster bc-sedang">Rawan Sedang</span></td>
-                        <td>Frekuensi Kejadian Sedang</td>
-                        <td>{{ $dominanSedang->disaster_type ?? '-' }}</td>
-                        <td>{{ $sedang }} Kabupaten/Kota</td>
-                    </tr>
-
-                    <tr>
-                        <td><span class="badge-cluster bc-rendah">Rawan Rendah</span></td>
-                        <td>Frekuensi Kejadian Rendah</td>
-                        <td>{{ $dominanRendah->disaster_type ?? '-' }}</td>
-                        <td>{{ $rendah }} Kabupaten/Kota</td>
-                    </tr>
+                    <tbody id="summaryTableBody">
+                        <tr>
+                            <td><span class="badge-cluster bc-tinggi">Rawan Tinggi</span></td>
+                            <td>Frekuensi Kejadian Tinggi</td>
+                            <td>{{ $dominanTinggi->disaster_type ?? '-' }}</td>
+                            <td id="tdTinggi">{{ $tinggi }} Kabupaten/Kota</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge-cluster bc-sedang">Rawan Sedang</span></td>
+                            <td>Frekuensi Kejadian Sedang</td>
+                            <td>{{ $dominanSedang->disaster_type ?? '-' }}</td>
+                            <td id="tdSedang">{{ $sedang }} Kabupaten/Kota</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge-cluster bc-rendah">Rawan Rendah</span></td>
+                            <td>Frekuensi Kejadian Rendah</td>
+                            <td>{{ $dominanRendah->disaster_type ?? '-' }}</td>
+                            <td id="tdRendah">{{ $rendah }} Kabupaten/Kota</td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -692,29 +699,177 @@
 </div><!-- /main-content -->
 
 <script>
-// ── DATA FROM BLADE ──
-const clusterData = @json($mapData);
-const tinggi  = {{ $tinggi }};
-const sedang  = {{ $sedang }};
-const rendah  = {{ $rendah }};
-const kejadianTinggi = {{ $kejadianTinggi }};
-const kejadianSedang = {{ $kejadianSedang }};
-const kejadianRendah = {{ $kejadianRendah }};
-const jenisLabels = @json($jenisBencana->pluck('disaster_type'));
-const jenisValues = @json($jenisBencana->pluck('total'));
+/* ══════════════════════════════════════════
+   DATA DARI BLADE
+══════════════════════════════════════════ */
+const clusterData     = @json($mapData);          /* [{kabupaten, cluster, frekuensi, jenisDominan}] */
+const BASE_TINGGI     = {{ $tinggi }};
+const BASE_SEDANG     = {{ $sedang }};
+const BASE_RENDAH     = {{ $rendah }};
+const BASE_KJ_TINGGI  = {{ $kejadianTinggi }};
+const BASE_KJ_SEDANG  = {{ $kejadianSedang }};
+const BASE_KJ_RENDAH  = {{ $kejadianRendah }};
+const BASE_TOTAL      = {{ $totalKejadian }};
+const jenisLabels     = @json($jenisBencana->pluck('disaster_type'));
+const jenisValues     = @json($jenisBencana->pluck('total'));
 
-// ── CHART DEFAULTS ──
+/* ══════════════════════════════════════════
+   STATE
+══════════════════════════════════════════ */
+let selectedWilayah    = [];   /* [{kabupaten, cluster}] */
+let activeClusterFilter = 'all';
+let kbdIndex           = -1;
+
+/* ══════════════════════════════════════════
+   HELPERS
+══════════════════════════════════════════ */
+function normName(s) {
+    return s.toLowerCase()
+            .replace(/\b(kabupaten|kota)\b/g, '')
+            .replace(/\s+/g, ' ')
+            .trim();
+}
+
+function getColor(c) {
+    return c === 'cluster_1' ? '#B23A2E'
+         : c === 'cluster_2' ? '#BD8327'
+         : '#3C7A56';
+}
+
+function getLabel(c) {
+    return c === 'cluster_1' ? 'Rawan Tinggi'
+         : c === 'cluster_2' ? 'Rawan Sedang'
+         : 'Rawan Rendah';
+}
+
+function getBadgeClass(c) {
+    return c === 'cluster_1' ? 'bc-tinggi'
+         : c === 'cluster_2' ? 'bc-sedang'
+         : 'bc-rendah';
+}
+
+function getTagClass(c) {
+    return c === 'cluster_1' ? 'tc-tinggi'
+         : c === 'cluster_2' ? 'tc-sedang'
+         : 'tc-rendah';
+}
+
+function fmtNum(n) {
+    return Number(n).toLocaleString('id-ID');
+}
+
+/* ══════════════════════════════════════════
+   FILTER + STATS (client-side dari clusterData)
+══════════════════════════════════════════ */
+function getFilteredData() {
+    let data = clusterData;
+
+    if (selectedWilayah.length > 0) {
+        const sel = new Set(selectedWilayah.map(w => w.kabupaten));
+        data = data.filter(d => sel.has(d.kabupaten));
+    }
+
+    if (activeClusterFilter !== 'all') {
+        data = data.filter(d => d.cluster === activeClusterFilter);
+    }
+
+    return data;
+}
+
+function computeStats(data) {
+    let tinggi = 0, sedang = 0, rendah = 0;
+    let kjT = 0, kjS = 0, kjR = 0;
+
+    data.forEach(d => {
+        if (d.cluster === 'cluster_1') { tinggi++; kjT += Number(d.frekuensi); }
+        else if (d.cluster === 'cluster_2') { sedang++; kjS += Number(d.frekuensi); }
+        else { rendah++; kjR += Number(d.frekuensi); }
+    });
+
+    return {
+        tinggi, sedang, rendah,
+        kjTinggi: kjT, kjSedang: kjS, kjRendah: kjR,
+        total: kjT + kjS + kjR
+    };
+}
+
+/* ══════════════════════════════════════════
+   UPDATE DASHBOARD
+══════════════════════════════════════════ */
+function updateDashboard() {
+    const data  = getFilteredData();
+    const isFiltered = selectedWilayah.length > 0 || activeClusterFilter !== 'all';
+    const stats = isFiltered ? computeStats(data) : null;
+
+    /* ── stat cards ── */
+    document.getElementById('statTotal').textContent  = isFiltered ? fmtNum(stats.total)   : fmtNum(BASE_TOTAL);
+    document.getElementById('statTinggi').textContent = isFiltered ? stats.tinggi           : BASE_TINGGI;
+    document.getElementById('statSedang').textContent = isFiltered ? stats.sedang           : BASE_SEDANG;
+    document.getElementById('statRendah').textContent = isFiltered ? stats.rendah           : BASE_RENDAH;
+
+    /* ── legend ── */
+    document.getElementById('lgTinggi').textContent = isFiltered ? stats.tinggi : BASE_TINGGI;
+    document.getElementById('lgSedang').textContent = isFiltered ? stats.sedang : BASE_SEDANG;
+    document.getElementById('lgRendah').textContent = isFiltered ? stats.rendah : BASE_RENDAH;
+
+    /* ── distribusi ── */
+    document.getElementById('distTinggi').textContent = fmtNum(isFiltered ? stats.kjTinggi : BASE_KJ_TINGGI) + ' kejadian';
+    document.getElementById('distSedang').textContent = fmtNum(isFiltered ? stats.kjSedang : BASE_KJ_SEDANG) + ' kejadian';
+    document.getElementById('distRendah').textContent = fmtNum(isFiltered ? stats.kjRendah : BASE_KJ_RENDAH) + ' kejadian';
+
+    /* ── tabel wilayah terdampak ── */
+    document.getElementById('tdTinggi').textContent = (isFiltered ? stats.tinggi : BASE_TINGGI) + ' Kabupaten/Kota';
+    document.getElementById('tdSedang').textContent = (isFiltered ? stats.sedang : BASE_SEDANG) + ' Kabupaten/Kota';
+    document.getElementById('tdRendah').textContent = (isFiltered ? stats.rendah : BASE_RENDAH) + ' Kabupaten/Kota';
+
+    /* ── bar chart ── */
+    barChart.data.datasets[0].data = isFiltered
+        ? [stats.kjTinggi, stats.kjSedang, stats.kjRendah]
+        : [BASE_KJ_TINGGI, BASE_KJ_SEDANG, BASE_KJ_RENDAH];
+    barChart.update();
+
+    /* ── donut chart ── */
+    if (isFiltered) {
+        const jenis = computeJenis(data);
+        donutChart.data.labels                 = jenis.map(j => j.type);
+        donutChart.data.datasets[0].data       = jenis.map(j => j.total);
+    } else {
+        donutChart.data.labels                 = jenisLabels;
+        donutChart.data.datasets[0].data       = jenisValues;
+    }
+    donutChart.update();
+
+    /* ── filter info banner ── */
+    const fi = document.getElementById('filterInfo');
+    if (isFiltered) {
+        fi.classList.add('visible');
+        const parts = [];
+        if (selectedWilayah.length > 0)
+            parts.push(selectedWilayah.map(w => w.kabupaten).join(', '));
+        if (activeClusterFilter !== 'all')
+            parts.push(getLabel(activeClusterFilter));
+        document.getElementById('filterInfoText').textContent = parts.join(' · ');
+    } else {
+        fi.classList.remove('visible');
+    }
+
+    /* ── map markers ── */
+    updateMap(data);
+}
+
+/* ══════════════════════════════════════════
+   CHARTS
+══════════════════════════════════════════ */
 Chart.defaults.font.family = 'Work Sans';
 Chart.defaults.font.size   = 10;
 Chart.defaults.color       = '#5E6877';
 
-// ── 1. BAR CHART: Frekuensi per Klaster ──
-const freqBarChart = new Chart(document.getElementById('freqBarChart'), {
+const barChart = new Chart(document.getElementById('freqBarChart'), {
     type: 'bar',
     data: {
-        labels: ['Rawan\nTinggi', 'Klaster Rawan\nSedang', 'Klaster Rawan\nRendah'],
+        labels: ['Rawan\nTinggi', 'Rawan\nSedang', 'Rawan\nRendah'],
         datasets: [{
-            data: [kejadianTinggi, kejadianSedang, kejadianRendah],
+            data: [BASE_KJ_TINGGI, BASE_KJ_SEDANG, BASE_KJ_RENDAH],
             backgroundColor: ['#B23A2E', '#BD8327', '#3C7A56'],
             borderRadius: 6,
             barThickness: 32
@@ -731,227 +886,350 @@ const freqBarChart = new Chart(document.getElementById('freqBarChart'), {
     }
 });
 
-// ── 2. DONUT: Jenis Bencana ──
-const jenisDonut = new Chart(document.getElementById('jenisDonut'), {
+const donutChart = new Chart(document.getElementById('jenisDonut'), {
     type: 'doughnut',
     data: {
         labels: jenisLabels,
         datasets: [{
             data: jenisValues,
-            backgroundColor:[
-                '#2B5C73',
-                '#B23A2E',
-                '#BD8327',
-                '#3C7A56',
-                '#6E5A9E',
-                '#2F8F82',
-                '#8A8F87'
-            ],
-            borderWidth:2,
-            borderColor:'#fff'
+            backgroundColor: ['#2B5C73','#B23A2E','#BD8327','#3C7A56','#6E5A9E','#2F8F82','#8A8F87'],
+            borderWidth: 2,
+            borderColor: '#fff'
         }]
     },
-    options:{
+    options: {
         responsive: true,
         maintainAspectRatio: false,
-        cutout:'65%',
-        plugins:{
-            legend:{
+        cutout: '65%',
+        plugins: {
+            legend: {
                 position: window.innerWidth < 576 ? 'bottom' : 'right',
-                labels:{
-                    boxWidth:10,
-                    font:{size:9}
-                }
+                labels: { boxWidth: 10, font: { size: 9 } }
             }
         }
     }
 });
 
-// Reposisi legend donut saat resize lintas breakpoint mobile/desktop
 let resizeTimer;
 window.addEventListener('resize', () => {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => {
-        const newPos = window.innerWidth < 576 ? 'bottom' : 'right';
-        if (jenisDonut.options.plugins.legend.position !== newPos) {
-            jenisDonut.options.plugins.legend.position = newPos;
-            jenisDonut.update();
+        const pos = window.innerWidth < 576 ? 'bottom' : 'right';
+        if (donutChart.options.plugins.legend.position !== pos) {
+            donutChart.options.plugins.legend.position = pos;
+            donutChart.update();
         }
     }, 150);
 });
 
-// ── LEAFLET MAP ──
+/* ══════════════════════════════════════════
+   LEAFLET MAP
+══════════════════════════════════════════ */
 const map = L.map('map').setView([-7.5, 112.5], 8);
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap'
 }).addTo(map);
 
-function getColor(c) {
-    return c === 'cluster_1' ? '#B23A2E' : c === 'cluster_2' ? '#BD8327' : c === 'cluster_0' ? '#3C7A56' : '#9ca3af';
-}
-function getLabel(c) {
-    return c === 'cluster_1' ? 'Rawan Tinggi' : c === 'cluster_2' ? 'Rawan Sedang' : c === 'cluster_0' ? 'Rawan Rendah' : 'Tidak Ada Data';
-}
-function normName(str) {
-    return str.toLowerCase().replace(/\bkabupaten\b/g,'').replace(/\bkota\b/g,'').replace(/\s+/g,' ').trim();
-}
-
+/* lookup: normName → item */
 const lookup = {};
 clusterData.forEach(item => { lookup[normName(item.kabupaten)] = item; });
 
-// allMarkers harus dideklarasikan di scope luar (global),
-// supaya bisa diakses oleh applyFilter() yang juga berada di luar
-// callback fetch().then(...).
-let allMarkers = [];
+let allMarkers  = [];
 let borderLayer = null;
+
+function updateMap(activeData) {
+    const activeKab = new Set(activeData.map(d => d.kabupaten));
+
+    allMarkers.forEach(m => {
+        const show = activeKab.has(m.kabupaten);
+
+        if (show && !map.hasLayer(m.marker)) m.marker.addTo(map);
+        else if (!show && map.hasLayer(m.marker)) map.removeLayer(m.marker);
+
+        /* dim/undim marker element */
+        if (m.el) m.el.style.opacity = show ? '1' : '0.25';
+    });
+
+    /* dim/undim border layer */
+    if (borderLayer) {
+        borderLayer.eachLayer(lyr => {
+            if (!lyr._myItem) return;
+            const active = activeKab.has(lyr._myItem.kabupaten);
+            lyr.setStyle({ opacity: active ? 1 : 0.2, fillOpacity: 0 });
+        });
+    }
+}
 
 fetch('/skripsi_pemetaan/public/geojson/jatim_kabupaten.geojson')
     .then(r => r.json())
     .then(geojson => {
 
-        // 1. Garis batas wilayah
+        /* ── border layer ── */
         borderLayer = L.geoJSON(geojson, {
             style: () => ({ fillOpacity: 0, color: '#facc15', weight: 1.5 }),
             onEachFeature(feature, lyr) {
                 const name  = feature.properties.NAME_2 || '';
                 const item  = lookup[normName(name)];
+                lyr._myItem = item;
                 const color = item ? getColor(item.cluster) : '#9ca3af';
-                lyr.on('mouseover', function() { this.setStyle({ fillColor: color, fillOpacity: 0.2 }); });
-                lyr.on('mouseout',  function() { borderLayer.resetStyle(this); });
-                lyr.on('click',     function() { this.openPopup(); });
-                lyr.bindPopup(`<b style="font-family:'Space Grotesk',sans-serif;">${name}</b><br>
-                    <span style="background:${color};color:#fff;padding:1px 8px;border-radius:4px;font-size:10px">${item ? getLabel(item.cluster) : '-'}</span><br>
-                    Frekuensi: <b style="font-family:'JetBrains Mono', monospace;">${item ? item.frekuensi : '-'}</b> kejadian`);
+
+                lyr.on('mouseover', function () { this.setStyle({ fillColor: color, fillOpacity: .2 }); });
+                lyr.on('mouseout',  function () { this.setStyle({ fillOpacity: 0 }); });
+                lyr.on('click', function () {
+                    if (item) selectWilayah(item);
+                    this.openPopup();
+                });
+
+                lyr.bindPopup(`
+                    <b style="font-family:'Space Grotesk',sans-serif;">${name}</b><br>
+                    <span style="background:${color};color:#fff;padding:1px 8px;border-radius:4px;font-size:10px">
+                        ${item ? getLabel(item.cluster) : '-'}
+                    </span><br>
+                    Frekuensi: <b style="font-family:'JetBrains Mono',monospace;">${item ? item.frekuensi : '-'}</b> kejadian
+                    ${item && item.jenisDominan ? '<br>Bencana Dominan: <b>' + item.jenisDominan + '</b>' : ''}
+                `);
             }
         }).addTo(map);
 
-        // 2. Circle marker di tiap kabupaten
+        /* ── circle markers ── */
         geojson.features.forEach(feature => {
-
             const name = feature.properties.NAME_2 || '';
             const item = lookup[normName(name)];
-
             if (!item) return;
 
-            const color = getColor(item.cluster);
-
+            const color  = getColor(item.cluster);
             const coords = [];
 
-            function extract(c){
-                if(typeof c[0] === 'number'){
-                    coords.push(c);
-                }else{
-                    c.forEach(extract);
-                }
+            function extract(c) {
+                if (typeof c[0] === 'number') coords.push(c);
+                else c.forEach(extract);
             }
-
             extract(feature.geometry.coordinates);
 
-            const lat =
-                coords.reduce((s,c)=>s+c[1],0) /
-                coords.length;
+            const lat = coords.reduce((s, c) => s + c[1], 0) / coords.length;
+            const lng = coords.reduce((s, c) => s + c[0], 0) / coords.length;
 
-            const lng =
-                coords.reduce((s,c)=>s+c[0],0) /
-                coords.length;
+            /* div element yang akan di-dim saat filter */
+            const el = document.createElement('div');
+            el.style.cssText = `
+                width:28px; height:28px;
+                background:#fff;
+                border:3px solid ${color};
+                border-radius:50%;
+                display:flex; align-items:center; justify-content:center;
+                font-family:'JetBrains Mono',monospace;
+                font-size:9px; font-weight:700;
+                color:#1B2430;
+                transition: opacity .2s;
+            `;
+            el.textContent = item.frekuensi;
 
-            // bindPopup ditambahkan ke marker juga, supaya klik di titik
-            // (lingkaran angka) tetap memunculkan popup, bukan hanya
-            // klik di polygon di bawahnya.
-            const marker = L.marker([lat,lng],{
-                icon:L.divIcon({
-                    className:'',
-                    html:`<div style="
-                        width:28px;
-                        height:28px;
-                        background:#fff;
-                        border:3px solid ${color};
-                        border-radius:50%;
-                        display:flex;
-                        align-items:center;
-                        justify-content:center;
-                        font-family:'JetBrains Mono', monospace;
-                        font-size:9px;
-                        font-weight:700;
-                        color:#1B2430;">
-                        ${item.frekuensi}
-                    </div>`,
-                    iconSize:[28,28]
-                })
+            const marker = L.marker([lat, lng], {
+                icon: L.divIcon({ className: '', html: el, iconSize: [28, 28] })
             })
-            .bindPopup(`<b style="font-family:'Space Grotesk',sans-serif;">${name}</b><br>
-                <span style="background:${color};color:#fff;padding:1px 8px;border-radius:4px;font-size:10px">${getLabel(item.cluster)}</span><br>
-                Frekuensi: <b class="num-mono" style="font-family:'JetBrains Mono', monospace;">${item.frekuensi}</b> kejadian`)
+            .bindPopup(`
+                <b style="font-family:'Space Grotesk',sans-serif;">${name}</b><br>
+                <span style="background:${color};color:#fff;padding:1px 8px;border-radius:4px;font-size:10px">
+                    ${getLabel(item.cluster)}
+                </span><br>
+                Frekuensi: <b style="font-family:'JetBrains Mono',monospace;">${item.frekuensi}</b> kejadian
+                ${item.jenisDominan ? '<br>Bencana Dominan: <b>' + item.jenisDominan + '</b>' : ''}
+            `)
             .addTo(map);
 
-            allMarkers.push({
-                marker:marker,
-                cluster:item.cluster,
-                wilayah:name.toLowerCase()
-            });
+            marker.on('click', () => selectWilayah(item));
 
+            allMarkers.push({ marker, kabupaten: item.kabupaten, cluster: item.cluster, el });
         });
 
-        map.fitBounds(borderLayer.getBounds(), { padding: [6,6] });
-
-        // Pastikan ukuran peta dihitung ulang setelah layout responsive
-        // selesai render (penting saat tinggi #map berubah via media query)
+        map.fitBounds(borderLayer.getBounds(), { padding: [6, 6] });
         setTimeout(() => map.invalidateSize(), 200);
     });
 
-// Recalculate ukuran peta saat jendela di-resize (rotasi device, dsb)
-window.addEventListener('resize', () => {
-    if (map) map.invalidateSize();
-});
+window.addEventListener('resize', () => { if (map) map.invalidateSize(); });
 
-function applyFilter(){
-    const keyword =
-        document.getElementById('searchInput')
-        .value
-        .trim()
-        .toLowerCase();
+/* ══════════════════════════════════════════
+   SEARCH — AUTOCOMPLETE + MULTI TAG
+══════════════════════════════════════════ */
+const searchInput   = document.getElementById('searchInput');
+const dropdown      = document.getElementById('searchDropdown');
+const tagsRow       = document.getElementById('tagsRow');
+const clearInputBtn = document.getElementById('clearInputBtn');
 
-    const cluster =
-        document.getElementById('clusterFilter')
-        .value;
+/* Render dropdown */
+function renderDropdown(keyword) {
+    if (!keyword) { closeDropdown(); return; }
 
-    allMarkers.forEach(m => {
+    const kw      = keyword.toLowerCase();
+    const selSet  = new Set(selectedWilayah.map(w => w.kabupaten));
 
-        const namaMatch =
-            m.wilayah.includes(keyword);
+    let matches = clusterData
+        .filter(d => !selSet.has(d.kabupaten))
+        .filter(d => {
+            const n = d.kabupaten.toLowerCase();
+            return n.includes(kw) || normName(d.kabupaten).includes(kw);
+        });
 
-        const clusterMatch =
-            cluster === 'all'
-            ||
-            m.cluster === cluster;
+    /* Filter sesuai cluster filter aktif */
+    if (activeClusterFilter !== 'all') {
+        matches = matches.filter(d => d.cluster === activeClusterFilter);
+    }
 
-        if(namaMatch && clusterMatch){
+    /* Sort alfabet, max 5 */
+    matches = matches
+        .sort((a, b) => a.kabupaten.localeCompare(b.kabupaten, 'id'))
+        .slice(0, 5);
 
-            if(!map.hasLayer(m.marker)){
-                m.marker.addTo(map);
-            }
+    if (matches.length === 0) {
+        dropdown.innerHTML = `<div class="dropdown-empty">Tidak ada wilayah yang cocok</div>`;
+    } else {
+        dropdown.innerHTML = matches.map((d, i) => `
+            <div class="dropdown-item" data-kab="${d.kabupaten}" data-cluster="${d.cluster}" data-i="${i}">
+                <span class="di-name">${d.kabupaten}</span>
+                <span class="di-badge ${getBadgeClass(d.cluster)}">${getLabel(d.cluster)}</span>
+            </div>
+        `).join('');
 
-        }else{
+        dropdown.querySelectorAll('.dropdown-item').forEach(el => {
+            el.addEventListener('mousedown', e => {
+                e.preventDefault();
+                pickFromDropdown(el);
+            });
+        });
+    }
 
-            if(map.hasLayer(m.marker)){
-                map.removeLayer(m.marker);
-            }
-
-        }
-
-    });
-
+    kbdIndex = -1;
+    dropdown.classList.add('open');
 }
 
-document
-.getElementById('searchInput')
-.addEventListener('input', applyFilter);
+function closeDropdown() {
+    dropdown.classList.remove('open');
+    kbdIndex = -1;
+}
 
-document
-.getElementById('clusterFilter')
-.addEventListener('change', applyFilter);
+function pickFromDropdown(el) {
+    addWilayah(el.dataset.kab, el.dataset.cluster);
+    searchInput.value = '';
+    clearInputBtn.classList.remove('visible');
+    closeDropdown();
+    searchInput.focus();
+}
 
+/* Pilih wilayah dari klik peta */
+function selectWilayah(item) {
+    if (selectedWilayah.find(w => w.kabupaten === item.kabupaten)) return;
+    addWilayah(item.kabupaten, item.cluster);
+}
+
+function addWilayah(kab, cluster) {
+    if (selectedWilayah.find(w => w.kabupaten === kab)) return;
+    selectedWilayah.push({ kabupaten: kab, cluster });
+    renderTags();
+    updateDashboard();
+}
+
+function removeWilayah(kab) {
+    selectedWilayah = selectedWilayah.filter(w => w.kabupaten !== kab);
+    renderTags();
+    updateDashboard();
+}
+
+function clearAllWilayah() {
+    selectedWilayah = [];
+    renderTags();
+    updateDashboard();
+}
+
+function computeJenis(data) {
+    const map = {};
+    data.forEach(d => {
+        if (d.jenisDominan) {
+            map[d.jenisDominan] = (map[d.jenisDominan] || 0) + Number(d.frekuensi);
+        }
+    });
+    return Object.entries(map)
+        .sort((a, b) => b[1] - a[1])
+        .map(([type, total]) => ({ type, total }));
+}
+
+/* Render tag pills */
+function renderTags() {
+    if (selectedWilayah.length === 0) { tagsRow.innerHTML = ''; return; }
+
+    tagsRow.innerHTML =
+        selectedWilayah.map(w => `
+            <span class="tag-item ${getTagClass(w.cluster)}">
+                ${w.kabupaten}
+                <button class="tag-remove" data-kab="${w.kabupaten}" title="Hapus">✕</button>
+            </span>
+        `).join('')
+        + `<button class="clear-all-btn" id="clearAllBtn">Hapus semua</button>`;
+
+    tagsRow.querySelectorAll('.tag-remove').forEach(btn => {
+        btn.addEventListener('click', () => removeWilayah(btn.dataset.kab));
+    });
+
+    document.getElementById('clearAllBtn').addEventListener('click', clearAllWilayah);
+}
+
+/* Input events */
+searchInput.addEventListener('input', () => {
+    const v = searchInput.value.trim();
+    clearInputBtn.classList.toggle('visible', v.length > 0);
+    renderDropdown(v);
+});
+
+searchInput.addEventListener('keydown', e => {
+    const items = dropdown.querySelectorAll('.dropdown-item');
+    if (!items.length) return;
+
+    if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        kbdIndex = Math.min(kbdIndex + 1, items.length - 1);
+        highlightKbd(items);
+    } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        kbdIndex = Math.max(kbdIndex - 1, 0);
+        highlightKbd(items);
+    } else if (e.key === 'Enter' && kbdIndex >= 0) {
+        e.preventDefault();
+        pickFromDropdown(items[kbdIndex]);
+    } else if (e.key === 'Escape') {
+        closeDropdown();
+    }
+});
+
+function highlightKbd(items) {
+    items.forEach((el, i) => el.classList.toggle('kbd-active', i === kbdIndex));
+    if (kbdIndex >= 0) items[kbdIndex].scrollIntoView({ block: 'nearest' });
+}
+
+searchInput.addEventListener('blur', () => setTimeout(closeDropdown, 150));
+
+clearInputBtn.addEventListener('click', () => {
+    searchInput.value = '';
+    clearInputBtn.classList.remove('visible');
+    closeDropdown();
+    searchInput.focus();
+});
+
+/* Cluster filter */
+document.getElementById('clusterFilter').addEventListener('change', e => {
+    activeClusterFilter = e.target.value;
+    updateDashboard();
+});
+
+/* Reset dari banner */
+document.getElementById('filterInfoClear').addEventListener('click', () => {
+    selectedWilayah     = [];
+    activeClusterFilter = 'all';
+    document.getElementById('clusterFilter').value = 'all';
+    searchInput.value = '';
+    clearInputBtn.classList.remove('visible');
+    renderTags();
+    updateDashboard();
+});
 </script>
 
 </body>
