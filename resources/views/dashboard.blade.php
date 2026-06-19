@@ -31,6 +31,12 @@
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
+        html, body {
+            width: 100%;
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
         body {
             font-family: 'Work Sans', sans-serif;
             background: var(--paper);
@@ -39,28 +45,38 @@
             min-height: 100vh;
         }
 
+        img, svg, canvas { max-width: 100%; }
+
         .num-mono {
             font-family: 'JetBrains Mono', monospace;
             font-weight: 600;
         }
 
-        /* ── MAIN LAYOUT ── */
-       .main-content {
+        /* ══════════════════════════════════════
+           MAIN LAYOUT — default: desktop (≥993px)
+           ══════════════════════════════════════ */
+        .main-content {
             display: grid;
             grid-template-columns: 52% 48%;
+            align-items: stretch;  /* left & right panel sejajar tingginya */
             gap: 12px;
             padding: 12px;
             min-height: 100vh;
+            max-width: 100%;
         }
+
         /* ── LEFT PANEL ── */
         .left-panel {
             width: 100%;
-            min-width: 100%;
+            min-width: 0;          /* FIX: cegah grid item melebar di luar kolom */
             background: var(--surface);
             border: 1px solid var(--line);
             border-radius: 12px;
             padding: 12px;
             overflow-y: auto;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
         }
 
         .left-panel::-webkit-scrollbar { width: 4px; }
@@ -83,6 +99,22 @@
             margin-bottom: 10px;
         }
 
+        .search-filter-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            flex-shrink: 0;
+        }
+
+        .search-filter-row .form-control,
+        .search-filter-row .form-select {
+            min-width: 0; /* FIX: cegah input/select mendorong layout melebar */
+        }
+
+        #searchInput { flex: 1 1 140px; }
+        #clusterFilter { flex: 1 1 130px; max-width: 100%; }
+
         .method-select {
             font-size: 11px;
             padding: 5px 10px;
@@ -95,9 +127,14 @@
             cursor: pointer;
         }
 
+        /* #map mengisi SISA tinggi left-panel (flex:1), sehingga
+           left-panel otomatis menyamai tinggi right-panel di desktop
+           tanpa ruang kosong di bawahnya. min-height sebagai fallback
+           kalau flex context tidak tersedia (mis. saat dicetak). */
         #map {
             width: 100%;
-            height: 720px;
+            flex: 1 1 auto;
+            min-height: 420px;
             border-radius: 10px;
             border: 1px solid var(--line);
         }
@@ -107,6 +144,7 @@
             gap: 14px;
             margin: 8px 0;
             flex-wrap: wrap;
+            flex-shrink: 0;
         }
 
         .legend-item {
@@ -115,6 +153,7 @@
             gap: 5px;
             font-size: 10px;
             color: var(--ink-soft);
+            white-space: nowrap;
         }
 
         .legend-dot {
@@ -148,6 +187,8 @@
             background: var(--paper);
             border-radius: 8px;
             padding: 7px 10px;
+            flex-wrap: wrap;
+            gap: 4px;
         }
 
         .cluster-row .dot {
@@ -163,16 +204,19 @@
             color: var(--ink);
             flex: 1;
             margin-left: 7px;
+            min-width: 80px;
         }
 
         .cluster-row .c-count {
             font-size: 11px;
             color: var(--ink-soft);
+            white-space: nowrap;
         }
 
         /* ── RIGHT PANEL ── */
         .right-panel {
             flex: 1;
+            min-width: 0;          /* FIX: cegah grid item melebar di luar kolom */
             overflow: visible;
             padding: 14px 16px;
             display: flex;
@@ -200,6 +244,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
+            min-width: 0;
         }
 
         .stat-card .s-num {
@@ -208,6 +253,7 @@
             font-weight: 700;
             line-height: 1;
             color: var(--ink);
+            white-space: nowrap;
         }
 
         .stat-card .s-label {
@@ -221,6 +267,8 @@
         .stat-card .s-icon {
             font-size: 24px;
             opacity: .35;
+            flex-shrink: 0;
+            margin-left: 8px;
         }
 
         .sc-blue   { border-top-color: var(--signal-info); }
@@ -245,6 +293,8 @@
             border-radius: 12px;
             padding: 12px;
             box-shadow: 0 1px 3px rgba(27,36,48,.04);
+            min-width: 0;
+            overflow: hidden;
         }
 
         .chart-card .cc-title {
@@ -257,6 +307,68 @@
             margin-bottom: 8px;
         }
 
+        .chart-card canvas {
+            max-width: 100%;
+        }
+
+        /* Wrapper dengan tinggi tetap — mencegah canvas Chart.js
+           (maintainAspectRatio:false) memanjang tak terbatas ke bawah,
+           karena tanpa parent bertinggi pasti, chart akan mengikuti
+           tinggi konten yang justru ditentukan oleh canvas itu sendiri. */
+        .chart-box {
+            position: relative;
+            width: 100%;
+            height: 220px;
+        }
+
+        .chart-box canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        @media (max-width: 992px) {
+            .chart-box { height: 200px; }
+        }
+
+        @media (max-width: 576px) {
+            .chart-box { height: 180px; }
+        }
+
+        /* ── DONUT CHART: scroll horizontal khusus ──
+           Donut "Jenis Bencana Dominan" punya legend yang bisa
+           panjang (banyak jenis bencana). Daripada legend terpotong
+           atau memaksa diperkecil sampai tidak terbaca, beri
+           .donut-box lebar minimum yang lega, lalu bungkus dengan
+           .donut-scroll yang overflow-x:auto — sehingga jika legend
+           lebih lebar dari card, user bisa scroll ke samping untuk
+           melihat semua item tanpa ada info yang hilang. */
+        .donut-scroll {
+            width: 100%;
+            overflow-x: auto;
+            overflow-y: hidden;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .donut-scroll::-webkit-scrollbar { height: 6px; }
+        .donut-scroll::-webkit-scrollbar-thumb {
+            background: var(--line);
+            border-radius: 4px;
+        }
+
+        .donut-box {
+            min-width: 360px; /* cukup lega utk donut + legend kanan */
+        }
+
+        @media (max-width: 992px) {
+            .donut-box { min-width: 320px; }
+        }
+
+        @media (max-width: 576px) {
+            /* Di mobile legend dipindah ke bawah (lihat JS), jadi
+               donut tidak perlu selebar versi legend-di-kanan */
+            .donut-box { min-width: 240px; height: 260px; }
+        }
+
         /* ── KARAKTERISTIK TABLE ── */
         .char-card {
             background: var(--surface);
@@ -264,6 +376,7 @@
             border-radius: 12px;
             padding: 12px;
             box-shadow: 0 1px 3px rgba(27,36,48,.04);
+            min-width: 0;
         }
 
         .char-card .cc-title {
@@ -276,8 +389,17 @@
             margin-bottom: 8px;
         }
 
+        /* Wrapper supaya tabel bisa di-scroll horizontal di layar sempit
+           tanpa mendorong layout keseluruhan melebar */
+        .table-scroll {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
         .char-table {
             width: 100%;
+            min-width: 480px;   /* jaga keterbacaan kolom, scroll jika sempit */
             border-collapse: collapse;
             font-size: 11px;
         }
@@ -290,6 +412,7 @@
             font-weight: 600;
             color: var(--ink);
             border: 1px solid var(--line);
+            white-space: nowrap;
         }
 
         .char-table td {
@@ -306,11 +429,103 @@
             font-size: 10px;
             font-weight: 600;
             color: #fff;
+            white-space: nowrap;
         }
 
         .bc-tinggi  { background: var(--signal-high); }
         .bc-sedang  { background: var(--signal-mid); }
         .bc-rendah  { background: var(--signal-low); }
+
+        /* ══════════════════════════════════════
+           BREAKPOINT 1 — Tablet & layar sempit
+           (≤ 992px): map masih cukup lega, tapi
+           layout 2-kolom mulai stack jadi 1 kolom
+           ══════════════════════════════════════ */
+        @media (max-width: 992px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                padding: 10px;
+                gap: 10px;
+            }
+
+            #map { height: 480px; flex: none; }
+
+            .stat-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .chart-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ══════════════════════════════════════
+           BREAKPOINT 2 — Mobile (≤ 576px)
+           Semua elemen full width, padding dan
+           ukuran font diperkecil agar tidak
+           "kanan-kiri" / overflow di HP.
+           ══════════════════════════════════════ */
+        @media (max-width: 576px) {
+            .main-content {
+                padding: 8px;
+                gap: 8px;
+            }
+
+            .left-panel,
+            .right-panel {
+                padding: 10px;
+            }
+
+            .right-panel { padding: 10px; }
+
+            .panel-title { font-size: 13px; }
+            .panel-subtitle { font-size: 9px; }
+
+            .search-filter-row {
+                flex-direction: column;
+            }
+
+            #searchInput,
+            #clusterFilter {
+                width: 100%;
+                flex: 1 1 auto;
+            }
+
+            #map { height: 320px; flex: none; }
+
+            .map-legend {
+                gap: 8px 14px;
+                justify-content: space-between;
+            }
+
+            .stat-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+            }
+
+            .stat-card {
+                padding: 10px;
+            }
+
+            .stat-card .s-num { font-size: 18px; }
+            .stat-card .s-icon { font-size: 20px; }
+
+            .chart-card,
+            .char-card {
+                padding: 10px;
+            }
+
+            .char-table {
+                font-size: 10px;
+            }
+        }
+
+        /* Layar sangat kecil (≤ 380px): stat cards jadi 1 kolom */
+        @media (max-width: 380px) {
+            .stat-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
@@ -324,11 +539,11 @@
         <div class="panel-title">Dashboard Klasterisasi Wilayah Rawan Bencana</div>
         <div class="panel-subtitle">Provinsi Jawa Timur, Periode 2021 – 2025</div>
 
-        <div style="display:flex;gap:8px;margin-bottom:10px;">
+        <div class="search-filter-row">
             <input type="text" id="searchInput" placeholder="Cari nama daerah..."
                 class="form-control form-control-sm" style="font-size:11px;">
             <select id="clusterFilter" class="form-select form-select-sm"
-                style="width:150px;font-size:11px;">
+                style="font-size:11px;">
                 <option value="all">Semua</option>
                 <option value="cluster_1">Rawan Tinggi</option>
                 <option value="cluster_2">Rawan Sedang</option>
@@ -351,26 +566,6 @@
             <div class="legend-item">
                 <div class="legend-dot" style="background:#3C7A56"></div>
                 Rawan Rendah &nbsp;<strong class="num-mono">{{ $rendah }}</strong>
-            </div>
-        </div>
-
-        <!-- Cluster kejadian summary -->
-        <div class="section-label">Distribusi Kejadian per Klaster</div>
-        <div class="cluster-summary">
-            <div class="cluster-row">
-                <div class="dot" style="background:#B23A2E"></div>
-                <span class="c-name">Rawan Tinggi</span>
-                <span class="c-count num-mono">{{ $kejadianTinggi }} kejadian</span>
-            </div>
-            <div class="cluster-row">
-                <div class="dot" style="background:#BD8327"></div>
-                <span class="c-name">Rawan Sedang</span>
-                <span class="c-count num-mono">{{ $kejadianSedang }} kejadian</span>
-            </div>
-            <div class="cluster-row">
-                <div class="dot" style="background:#3C7A56"></div>
-                <span class="c-name">Rawan Rendah</span>
-                <span class="c-count num-mono">{{ $kejadianRendah }} kejadian</span>
             </div>
         </div>
     </div>
@@ -410,18 +605,46 @@
             </div>
         </div>
 
+        <!-- DISTRIBUSI KEJADIAN PER KLASTER -->
+        <div class="char-card">
+            <div class="cc-title">Distribusi Kejadian per Klaster</div>
+            <div class="cluster-summary">
+                <div class="cluster-row">
+                    <div class="dot" style="background:#B23A2E"></div>
+                    <span class="c-name">Rawan Tinggi</span>
+                    <span class="c-count num-mono">{{ $kejadianTinggi }} kejadian</span>
+                </div>
+                <div class="cluster-row">
+                    <div class="dot" style="background:#BD8327"></div>
+                    <span class="c-name">Rawan Sedang</span>
+                    <span class="c-count num-mono">{{ $kejadianSedang }} kejadian</span>
+                </div>
+                <div class="cluster-row">
+                    <div class="dot" style="background:#3C7A56"></div>
+                    <span class="c-name">Rawan Rendah</span>
+                    <span class="c-count num-mono">{{ $kejadianRendah }} kejadian</span>
+                </div>
+            </div>
+        </div>
+
         <!-- CHART ROW -->
         <div class="chart-grid">
             <!-- Bar: Frekuensi per Klaster -->
             <div class="chart-card">
                 <div class="cc-title">Frekuensi Kejadian per Klaster</div>
-                <canvas id="freqBarChart" height="130"></canvas>
+                <div class="chart-box">
+                    <canvas id="freqBarChart"></canvas>
+                </div>
             </div>
 
             <!-- Donut: Jenis Bencana -->
             <div class="chart-card">
                 <div class="cc-title">Jenis Bencana Dominan</div>
-                <canvas id="jenisDonut" height="130"></canvas>
+                <div class="donut-scroll">
+                    <div class="chart-box donut-box">
+                        <canvas id="jenisDonut"></canvas>
+                    </div>
+                </div>
             </div>
 
         </div>
@@ -429,54 +652,56 @@
         <!-- KARAKTERISTIK TABLE -->
         <div class="char-card">
             <div class="cc-title">Ringkasan Karakteristik Tiap Klaster</div>
-            <table class="char-table">
-                <thead>
+            <div class="table-scroll">
+                <table class="char-table">
+                    <thead>
+                        <tr>
+                            <th>Klaster</th>
+                            <th>Keterangan</th>
+                            <th>Jenis Bencana Dominan</th>
+                            <th>Wilayah Terdampak</th>
+                        </tr>
+                    </thead>
+                    <tbody>
                     <tr>
-                        <th>Klaster</th>
-                        <th>Keterangan</th>
-                        <th>Jenis Bencana Dominan</th>
-                        <th>Wilayah Terdampak</th>
+                        <td><span class="badge-cluster bc-tinggi">Rawan Tinggi</span></td>
+                        <td>Frekuensi Kejadian Tinggi</td>
+                        <td>{{ $dominanTinggi->disaster_type ?? '-' }}</td>
+                        <td>{{ $tinggi }} Kabupaten/Kota</td>
                     </tr>
-                </thead>
-                <tbody>
-                <tr>
-                    <td><span class="badge-cluster bc-tinggi">Rawan Tinggi</span></td>
-                    <td>Frekuensi Kejadian Tinggi</td>
-                    <td>{{ $dominanTinggi->disaster_type ?? '-' }}</td>
-                    <td>{{ $tinggi }} Kabupaten/Kota</td>
-                </tr>
 
-                <tr>
-                    <td><span class="badge-cluster bc-sedang">Rawan Sedang</span></td>
-                    <td>Frekuensi Kejadian Sedang</td>
-                    <td>{{ $dominanSedang->disaster_type ?? '-' }}</td>
-                    <td>{{ $sedang }} Kabupaten/Kota</td>
-                </tr>
+                    <tr>
+                        <td><span class="badge-cluster bc-sedang">Rawan Sedang</span></td>
+                        <td>Frekuensi Kejadian Sedang</td>
+                        <td>{{ $dominanSedang->disaster_type ?? '-' }}</td>
+                        <td>{{ $sedang }} Kabupaten/Kota</td>
+                    </tr>
 
-                <tr>
-                    <td><span class="badge-cluster bc-rendah">Rawan Rendah</span></td>
-                    <td>Frekuensi Kejadian Rendah</td>
-                    <td>{{ $dominanRendah->disaster_type ?? '-' }}</td>
-                    <td>{{ $rendah }} Kabupaten/Kota</td>
-                </tr>
-                </tbody>
-                            </table>
-                        </div>
+                    <tr>
+                        <td><span class="badge-cluster bc-rendah">Rawan Rendah</span></td>
+                        <td>Frekuensi Kejadian Rendah</td>
+                        <td>{{ $dominanRendah->disaster_type ?? '-' }}</td>
+                        <td>{{ $rendah }} Kabupaten/Kota</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
-                    </div><!-- /right-panel -->
-                </div><!-- /main-content -->
+    </div><!-- /right-panel -->
+</div><!-- /main-content -->
 
-                <script>
-                // ── DATA FROM BLADE ──
-                const clusterData = @json($mapData);
-                const tinggi  = {{ $tinggi }};
-                const sedang  = {{ $sedang }};
-                const rendah  = {{ $rendah }};
-                const kejadianTinggi = {{ $kejadianTinggi }};
-                const kejadianSedang = {{ $kejadianSedang }};
-                const kejadianRendah = {{ $kejadianRendah }};
-                const jenisLabels = @json($jenisBencana->pluck('disaster_type'));
-                const jenisValues = @json($jenisBencana->pluck('total'));
+<script>
+// ── DATA FROM BLADE ──
+const clusterData = @json($mapData);
+const tinggi  = {{ $tinggi }};
+const sedang  = {{ $sedang }};
+const rendah  = {{ $rendah }};
+const kejadianTinggi = {{ $kejadianTinggi }};
+const kejadianSedang = {{ $kejadianSedang }};
+const kejadianRendah = {{ $kejadianRendah }};
+const jenisLabels = @json($jenisBencana->pluck('disaster_type'));
+const jenisValues = @json($jenisBencana->pluck('total'));
 
 // ── CHART DEFAULTS ──
 Chart.defaults.font.family = 'Work Sans';
@@ -484,7 +709,7 @@ Chart.defaults.font.size   = 10;
 Chart.defaults.color       = '#5E6877';
 
 // ── 1. BAR CHART: Frekuensi per Klaster ──
-new Chart(document.getElementById('freqBarChart'), {
+const freqBarChart = new Chart(document.getElementById('freqBarChart'), {
     type: 'bar',
     data: {
         labels: ['Rawan\nTinggi', 'Klaster Rawan\nSedang', 'Klaster Rawan\nRendah'],
@@ -496,6 +721,8 @@ new Chart(document.getElementById('freqBarChart'), {
         }]
     },
     options: {
+        responsive: true,
+        maintainAspectRatio: false,
         plugins: { legend: { display: false } },
         scales: {
             y: { beginAtZero: true, grid: { color: '#ECEFE8' }, ticks: { font: { size: 9 } } },
@@ -505,8 +732,7 @@ new Chart(document.getElementById('freqBarChart'), {
 });
 
 // ── 2. DONUT: Jenis Bencana ──
-
-new Chart(document.getElementById('jenisDonut'), {
+const jenisDonut = new Chart(document.getElementById('jenisDonut'), {
     type: 'doughnut',
     data: {
         labels: jenisLabels,
@@ -526,10 +752,12 @@ new Chart(document.getElementById('jenisDonut'), {
         }]
     },
     options:{
+        responsive: true,
+        maintainAspectRatio: false,
         cutout:'65%',
         plugins:{
             legend:{
-                position:'right',
+                position: window.innerWidth < 576 ? 'bottom' : 'right',
                 labels:{
                     boxWidth:10,
                     font:{size:9}
@@ -537,6 +765,19 @@ new Chart(document.getElementById('jenisDonut'), {
             }
         }
     }
+});
+
+// Reposisi legend donut saat resize lintas breakpoint mobile/desktop
+let resizeTimer;
+window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+        const newPos = window.innerWidth < 576 ? 'bottom' : 'right';
+        if (jenisDonut.options.plugins.legend.position !== newPos) {
+            jenisDonut.options.plugins.legend.position = newPos;
+            jenisDonut.update();
+        }
+    }, 150);
 });
 
 // ── LEAFLET MAP ──
@@ -559,12 +800,9 @@ function normName(str) {
 const lookup = {};
 clusterData.forEach(item => { lookup[normName(item.kabupaten)] = item; });
 
-// FIX #1: allMarkers harus dideklarasikan di scope luar (global),
+// allMarkers harus dideklarasikan di scope luar (global),
 // supaya bisa diakses oleh applyFilter() yang juga berada di luar
-// callback fetch().then(...). Sebelumnya ini dideklarasikan dengan
-// `const` DI DALAM callback, sehingga hilang begitu callback selesai
-// dan applyFilter() melempar error "allMarkers is not defined" ->
-// itulah sebabnya search & filter cluster berhenti berfungsi.
+// callback fetch().then(...).
 let allMarkers = [];
 let borderLayer = null;
 
@@ -618,10 +856,9 @@ fetch('/skripsi_pemetaan/public/geojson/jatim_kabupaten.geojson')
                 coords.reduce((s,c)=>s+c[0],0) /
                 coords.length;
 
-            // FIX #2: bindPopup ditambahkan ke marker juga.
-            // Sebelumnya marker (lingkaran angka) menutupi polygon
-            // di bawahnya sehingga klik tertangkap oleh marker yang
-            // tidak punya popup -> klik di titik rawan terasa "mati".
+            // bindPopup ditambahkan ke marker juga, supaya klik di titik
+            // (lingkaran angka) tetap memunculkan popup, bukan hanya
+            // klik di polygon di bawahnya.
             const marker = L.marker([lat,lng],{
                 icon:L.divIcon({
                     className:'',
@@ -657,7 +894,16 @@ fetch('/skripsi_pemetaan/public/geojson/jatim_kabupaten.geojson')
         });
 
         map.fitBounds(borderLayer.getBounds(), { padding: [6,6] });
+
+        // Pastikan ukuran peta dihitung ulang setelah layout responsive
+        // selesai render (penting saat tinggi #map berubah via media query)
+        setTimeout(() => map.invalidateSize(), 200);
     });
+
+// Recalculate ukuran peta saat jendela di-resize (rotasi device, dsb)
+window.addEventListener('resize', () => {
+    if (map) map.invalidateSize();
+});
 
 function applyFilter(){
     const keyword =
